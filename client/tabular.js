@@ -26,8 +26,7 @@ Template.tabular.rendered = function () {
 
         pub = tabularTable.pub;
 
-        // Build the list of field names we want included
-        // based on the provided columns object
+        // Loop through the provided columns object
         fields = {};
         _.each(columns, function (col) {
             // Custom handling for `tmpl` column option
@@ -42,18 +41,24 @@ Template.tabular.rendered = function () {
                 delete col.tmpl;
             }
 
-            var prop = col.data;
-            if (typeof prop !== "string")
-                return;
-
-            // for field names with a dot, we just need
-            // the top level field name
-            var dot = prop.indexOf(".");
-            if (dot !== -1) {
-                prop = prop.slice(0, dot);
+            // Automatically protect against errors from null and undefined
+            // values
+            if (!(defaultContent in col)) {
+                col.defaultContent = "";
             }
 
-            fields[prop] = 1;
+            // Build the list of field names we want included
+            var dataProp = col.data;
+            if (typeof dataProp === "string") {
+                // for field names with a dot, we just need
+                // the top level field name
+                var dot = dataProp.indexOf(".");
+                if (dot !== -1) {
+                    dataProp = dataProp.slice(0, dot);
+                }
+
+                fields[dataProp] = 1;
+            }
         });
 
         // Add default options
