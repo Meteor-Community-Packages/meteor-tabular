@@ -62,7 +62,7 @@ And then reference in one of your templates where you want it to appear:
 {{> tabular table=TabularTables.Books class="table table-striped table-bordered table-condensed"}}
 ```
 
-Or add a Mongo-style selector for a table that displays only one part of a collection:
+Or add a [Mongo-style selector](https://docs.meteor.com/#/full/selectors) for a table that displays only one part of a collection:
 
 ```html
 {{> tabular table=TabularTables.Books selector=selector class="table table-striped table-bordered table-condensed"}}
@@ -71,7 +71,7 @@ Or add a Mongo-style selector for a table that displays only one part of a colle
 ```js
 Template.myTemplate.helpers({
   selector: function () {
-    return {author: "Agatha Christie"}
+    return {author: "Agatha Christie"};
   }
 });
 ```
