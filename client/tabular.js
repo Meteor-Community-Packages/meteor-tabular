@@ -43,21 +43,31 @@ Template.tabular.rendered = function () {
 
             // Automatically protect against errors from null and undefined
             // values
-            if (!(defaultContent in col)) {
+            if (!("defaultContent" in col)) {
                 col.defaultContent = "";
             }
 
             // Build the list of field names we want included
             var dataProp = col.data;
             if (typeof dataProp === "string") {
-                // for field names with a dot, we just need
-                // the top level field name
-                var dot = dataProp.indexOf(".");
-                if (dot !== -1) {
-                    dataProp = dataProp.slice(0, dot);
-                }
+                // If it's referencing an instance function, don't
+                // include it.
+                if (dataProp.indexOf("()") === -1) {
+                    // for field names with a dot, we just need
+                    // the top level field name
+                    var dot = dataProp.indexOf(".");
+                    if (dot !== -1) {
+                        dataProp = dataProp.slice(0, dot);
+                    }
 
-                fields[dataProp] = 1;
+                    fields[dataProp] = 1;
+                }
+                // If it's referencing an instance function,
+                // prevent sorting because our pub function
+                // won't be able to do it.
+                else {
+                    col.sortable = false;
+                }
             }
         });
 
@@ -69,6 +79,8 @@ Template.tabular.rendered = function () {
                     limit = data.length,
                     sort;
 
+                // TODO support the nested arrays format for sort
+                // and ignore instance functions like "foo()"
                 sort = _.map(data.order, function (ord) {
                     var propName = columns[ord.column].data;
                     return [propName, ord.dir];

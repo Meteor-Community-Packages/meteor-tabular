@@ -18,6 +18,12 @@ Package.onUse(function(api) {
     'client/lib/dataTables.bootstrap.js',
     'client/lib/dataTables.bootstrap.css',
     'client/tabular.html',
-    'client/tabular.js'
+    'client/tabular.js',
+    // images
+    'images/sort_asc.png',
+    'images/sort_asc_disabled.png',
+    'images/sort_both.png',
+    'images/sort_desc.png',
+    'images/sort_desc_disabled.png'
   ], 'client');
 });
