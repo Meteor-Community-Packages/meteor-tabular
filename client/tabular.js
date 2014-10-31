@@ -59,6 +59,9 @@ Template.tabular.rendered = function () {
                     if (dot !== -1) {
                         dataProp = dataProp.slice(0, dot);
                     }
+                    
+                    // If it's referencing an array, strip off the brackets
+                    dataProp = dataProp.split('[')[0];
 
                     fields[dataProp] = 1;
                 }
