@@ -22,6 +22,8 @@ Template.tabular.rendered = function () {
 
         selector = data.selector || {};
 
+        searchfields = _.clone(tabularTable.options.searchfields);
+
         collection = tabularTable.collection;
 
         pub = tabularTable.pub;
@@ -80,7 +82,15 @@ Template.tabular.rendered = function () {
             ajax: function (data, callback, settings) {
                 var skip = data.start,
                     limit = data.length,
+                    search = data.search.value,
                     sort;
+
+                if (search) {
+                    var searches = _.map(searchfields, function(f) { var m = {}; m[f] = {$regex: search}; return m; });
+                    var searchselector = {$or: searches};
+                } else {
+                    var searchselector = selector;
+                }
 
                 // TODO support the nested arrays format for sort
                 // and ignore instance functions like "foo()"
@@ -89,7 +99,7 @@ Template.tabular.rendered = function () {
                     return [propName, ord.dir];
                 });
 
-                Meteor.call("tabular_getInfo", tabularTable.name, selector, sort, skip, limit, function (error, result) {
+                Meteor.call("tabular_getInfo", tabularTable.name, searchselector, sort, skip, limit, function (error, result) {
                     if (error) {
 
                     } else {
