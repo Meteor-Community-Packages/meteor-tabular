@@ -168,6 +168,20 @@ Template.tabular.rendered = function () {
     }
 
   });
+
+  // clean up after ourselves XXX not working
+  // need beforeDestroyed callback
+  // see https://github.com/meteor/meteor/issues/2141
+//  this.firstNode._uihooks = {
+//    removeElement: function (node, done) {
+//      console.log("table cleanup");
+//      if ($.fn.DataTable.fnIsDataTable(node)) {
+//        var dt = $(node).DataTable();
+//        console.log("dt", dt);
+//        dt && dt.destroy();
+//      }
+//    }
+//  };
 };
 
 function cleanFieldName(field) {
