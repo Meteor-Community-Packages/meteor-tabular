@@ -108,4 +108,12 @@ Template.bookCheckOutCell.events({
 });
 ```
 
+## Searching
+
+If your table includes the global search/filter field, it will work and will update results in a manner that remains fast even with large collections. By default, all columns are searched if they can be. If you don't want a column to be searched, add the `searchable: false` option on that column.
+
+If your table has a `selector` that already limits the results, the search happens within the selector results (i.e., your selector and the search selector are merged with an AND relationship).
+
 ## Using a Custom Publish Function
+
+TODO

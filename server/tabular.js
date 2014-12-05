@@ -1,6 +1,6 @@
 Meteor.publish("tabular_genericPub", function (tableName, ids, fields) {
     check(tableName, String);
-    check(ids, [String]);
+    check(ids, Array);
     check(fields, Match.Optional(Object));
 
     var table = tablesByName[tableName];
