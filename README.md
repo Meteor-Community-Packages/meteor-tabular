@@ -38,8 +38,8 @@ $ meteor add robertredl:tabular
 
 for examples and more details please refer to the original package
 
-(https://atmospherejs.com/aldeed/tabular)[https://atmospherejs.com/aldeed/tabular]
+https://atmospherejs.com/aldeed/tabular
 
 and the datatables documentation
 
-(http://datatables.net/reference/option/)[http://datatables.net/reference/option/]
+http://datatables.net/reference/option/
