@@ -16,15 +16,16 @@ adding the regex i option if caseInsenstitive is set to true
   https://datatables.net/reference/option/search.caseInsensitive
 
 ```
-  TabularTables.Books = new Tabular.Table({
-    . . . . .
-    "search": {
-      "regex": false, //don't use together with smart
-      "search": "", //initial filter on pagerender
-      "smart": false, //don't use together with regex
-      "caseInsensitive": true // default=true. Set to false for case sensitive search
-    }
-    });
+TabularTables.Books = new Tabular.Table({
+  . . . . .
+  "search": {
+
+    "regex": false, //don't use together with smart
+    "search": "", //initial filter on pagerender
+    "smart": false, //don't use together with regex
+    "caseInsensitive": true // default=true. Set to false for case sensitive search
+  }
+  });
 ```
 
 ---
