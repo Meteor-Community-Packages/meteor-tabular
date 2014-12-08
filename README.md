@@ -1,6 +1,32 @@
-aldeed:tabular
+robertredl:tabular
 =========================
 
+This is a minor fork of aldeed:tabular implementing  
+
+Atmosphere package (fork)
+https://atmospherejs.com/robertredl/tabular
+
+Github repository (fork)
+https://github.com/robertredl/meteor-tabular
+
+## caseInsensitive search by default
+
+adding the regex i option if caseInsenstitive is set to true  
+(this should now reflect the default behavior of datatables  
+  https://datatables.net/reference/option/search.caseInsensitive
+  ```
+  TabularTables.Books = new Tabular.Table({
+    . . . . .
+    "search": {
+      "regex": false, //don't use together with smart
+      "search": "", //initial filter on pagerender
+      "smart": false, //don't use together with regex
+      "caseInsensitive": true // default=true. Set to false for case sensitive search
+    }
+    });
+    ```
+
+---
 A Meteor package that creates reactive [DataTables](http://datatables.net/) in an efficient way, allowing you to display the contents of enormous collections without impacting app performance.
 
 * Fast: Uses an intelligent automatic data subscription so that table data is not loaded until it's needed and is cached in the browser after that.
@@ -18,7 +44,7 @@ Although this appears similar to the [jquery-datatables](https://github.com/Luma
 ## Installation
 
 ```bash
-$ meteor add aldeed:tabular
+$ meteor add robertredl:tabular
 ```
 
 ## Example
@@ -52,7 +78,13 @@ TabularTables.Books = new Tabular.Table({
     {
       tmpl: Meteor.isClient && Template.bookCheckOutCell
     }
-  ]
+  ],
+  "search": {
+    "regex": false, //don't use together with smart
+    "search": "", //initial filter on pagerender
+    "smart": false, //don't use together with regex
+    "caseInsensitive": true // default=true. Set to false for case sensitive search
+  }
 });
 ```
 
