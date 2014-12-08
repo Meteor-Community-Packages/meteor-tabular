@@ -14,7 +14,8 @@ https://github.com/robertredl/meteor-tabular
 adding the regex i option if caseInsenstitive is set to true  
 (this should now reflect the default behavior of datatables  
   https://datatables.net/reference/option/search.caseInsensitive
-  ```
+
+```
   TabularTables.Books = new Tabular.Table({
     . . . . .
     "search": {
@@ -24,7 +25,7 @@ adding the regex i option if caseInsenstitive is set to true
       "caseInsensitive": true // default=true. Set to false for case sensitive search
     }
     });
-    ```
+```
 
 ---
 A Meteor package that creates reactive [DataTables](http://datatables.net/) in an efficient way, allowing you to display the contents of enormous collections without impacting app performance.
