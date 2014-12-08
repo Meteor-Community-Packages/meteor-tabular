@@ -94,7 +94,7 @@ Template.tabular.rendered = function () {
         if (searchString) {
           var searches = _.map(searchFields, function(field) {
             var m = {};
-            m[field] = {$regex: searchString};
+            m[field] = {$regex: searchString, $options: '-i'};
             return m;
           });
           if (searches.length) {
