@@ -95,6 +95,10 @@ Template.tabular.rendered = function () {
           var searches = _.map(searchFields, function(field) {
             var m = {};
             m[field] = {$regex: searchString};
+            // caseInsensitive
+            if (tabularTable.options.search.caseInsensitive) {
+              m[field] = {$regex: searchString, $options: '-i'};
+            }
             return m;
           });
           if (searches.length) {
