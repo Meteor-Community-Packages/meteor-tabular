@@ -3,12 +3,6 @@ robertredl:tabular
 
 This is a minor fork of aldeed:tabular implementing  
 
-Atmosphere package (fork)
-https://atmospherejs.com/robertredl/tabular
-
-Github repository (fork)
-https://github.com/robertredl/meteor-tabular
-
 ## caseInsensitive search by default
 
 adding the regex i option if caseInsenstitive is set to true  
@@ -33,6 +27,14 @@ TabularTables.Books = new Tabular.Table({
 ```bash
 $ meteor add robertredl:tabular
 ```
+
+## Package & Repository
+
+Atmosphere package (fork)
+https://atmospherejs.com/robertredl/tabular
+
+Github repository (fork)
+https://github.com/robertredl/meteor-tabular
 
 ## Example
 
