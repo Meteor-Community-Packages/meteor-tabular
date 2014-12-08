@@ -36,7 +36,8 @@ $ meteor add robertredl:tabular
 
 ## Example
 
-for examples and more details please refer to the original package
+for examples, more details and future updates  
+please refer to the original package
 
 https://atmospherejs.com/aldeed/tabular
 
