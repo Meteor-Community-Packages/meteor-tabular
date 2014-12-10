@@ -88,6 +88,7 @@ Template.tabular.rendered = function () {
         var skip = data.start,
             limit = data.length,
             searchString = data.search && data.search.value,
+            caseInsensitive = tabularTable.options && tabularTable.options.search && tabularTable.options.search.caseInsensitive,
             currentSelector = _.clone(selector),
             sort;
 
@@ -95,6 +96,10 @@ Template.tabular.rendered = function () {
           var searches = _.map(searchFields, function(field) {
             var m = {};
             m[field] = {$regex: searchString};
+            // DataTables searches are case insensitive by default
+            if (caseInsensitive !== false) {
+              m[field]["$options"] = "-i";
+            }
             return m;
           });
           if (searches.length) {
