@@ -13,7 +13,7 @@ Meteor.publish("tabular_genericPub", function(tableName, selector, sort, skip, l
   check(limit, Number);
   check(fields, Match.Optional(Object));
 
-  console.log('sub with ', selector, sort, skip, limit, fields);
+  selector = selector || {};
 
   var table = tablesByName[tableName];
   if (!table) {
@@ -27,15 +27,17 @@ Meteor.publish("tabular_genericPub", function(tableName, selector, sort, skip, l
     return;
   }
 
-  // cursor for whole collection
-  var totalCursor = table.collection.find({}, {
-    fields: fields
-  });
+  var record = {
+    // current count of all documents
+    recordsTotal: table.collection.find({}, {
+      fields: fields
+    }).count(),
 
-  // cursor for filtered documents without any skip or limit
-  var filteredCursor = table.collection.find(selector || {}, {
-    fields: fields
-  });
+    // current count of filtered documents
+    recordsFiltered: table.collection.find(selector, {
+      fields: fields
+    }).count()
+  };
 
   // cursor for visible documents on table
   var visibleCursor = table.collection.find(selector || {}, {
@@ -45,12 +47,6 @@ Meteor.publish("tabular_genericPub", function(tableName, selector, sort, skip, l
     fields: fields
   });
 
-  var record = {
-    recordsFiltered: 0,
-    recordsTotal: 0
-  };
-
-  // TODO : dont forget to debounce this fn, first check if meteor already debounces changed events
   var recordReady = false;
   var updateRecords = function() {
     if (!recordReady) {
@@ -59,8 +55,13 @@ Meteor.publish("tabular_genericPub", function(tableName, selector, sort, skip, l
     self.changed('tabular_records', tableName, record);
   };
 
-  // track total doc count
-  var totalHandle = totalCursor.observe({
+  // We will skip {{recordsTotal}} documents and
+  // we will observe added and removed only after this publication initialized
+  // if we start counting from 0 we would count 1.000.000 documents if there were 1.000.000 documents in this collection
+  // we definitely don't want that
+  var totalHandle = table.collection.find({}, {
+    skip: record.recordsTotal
+  }).observe({
     added: function() {
       record.recordsTotal++;
       updateRecords();
@@ -72,7 +73,9 @@ Meteor.publish("tabular_genericPub", function(tableName, selector, sort, skip, l
   });
 
   // track filtered doc count
-  var filteredHandle = filteredCursor.observe({
+  var filteredHandle = table.collection.find(selector, {
+    skip: record.recordsFiltered
+  }).observe({
     added: function() {
       record.recordsFiltered++;
       updateRecords();
