@@ -5,8 +5,7 @@ Meteor.publish("tabular_genericPub", function (tableName, ids, fields) {
 
     var table = tablesByName[tableName];
     if (!table) {
-        this.ready();
-        return;
+        throw new Error('No TabularTable defined with the name "' + tableName + '". Make sure you are defining your TabularTable in common code.');
     }
 
     //check security function
@@ -22,7 +21,7 @@ Meteor.methods({
     "tabular_getInfo": function (tableName, selector, sort, skip, limit) {
         var table = tablesByName[tableName];
         if (!table) {
-            return;
+            throw new Error('No TabularTable defined with the name "' + tableName + '". Make sure you are defining your TabularTable in common code.');
         }
 
         this.unblock();
