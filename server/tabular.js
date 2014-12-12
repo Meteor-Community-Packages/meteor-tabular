@@ -40,7 +40,7 @@ Meteor.publish("tabular_genericPub", function(tableName, selector, sort, skip, l
   };
 
   // cursor for visible documents on table
-  var visibleCursor = table.collection.find(selector || {}, {
+  var visibleCursor = table.collection.find(selector, {
     sort: sort,
     skip: skip,
     limit: limit,
