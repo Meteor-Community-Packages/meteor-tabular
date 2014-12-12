@@ -7,11 +7,12 @@ Package.describe({
 
 Package.onUse(function(api) {
   api.versionsFrom(['METEOR@0.9.4', 'METEOR@1.0']);
-  api.use(['check', 'underscore', 'mongo', 'blaze', 'templating']);
+  api.use(['reactive-dict', 'check', 'underscore', 'mongo', 'blaze', 'templating']);
 
   api.export('Tabular');
 
   api.addFiles('common.js');
+  api.addFiles('client/tableRecords.js', 'client');
   api.addFiles('server/tabular.js', 'server');
   api.addFiles([
     'client/lib/jquery.dataTables.min.js',
