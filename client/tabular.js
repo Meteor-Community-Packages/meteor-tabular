@@ -10,8 +10,6 @@ Template.tabular.rendered = function() {
   var template = this,
     table, $tableElement = template.$('table');
 
-  template.state = new ReactiveDict();
-
   // We put this all in a reactive computation so that the component args,
   // such as the selector, can reactively change and the table will adjust.
   template.autorun(function() {
