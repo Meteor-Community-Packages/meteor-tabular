@@ -1,6 +1,11 @@
 Meteor.publish("tabular_genericPub", function(tableName, selector, sort, skip, limit, fields) {
   var self = this;
 
+  var table = tablesByName[tableName];
+  if (!table) {
+    throw new Error('No TabularTable defined with the name "' + tableName + '". Make sure you are defining your TabularTable in common code.');
+  }
+
   check(tableName, String);
   check(selector, Match.Optional(Object));
   check(sort, Array);
