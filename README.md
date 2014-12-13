@@ -114,6 +114,86 @@ If your table includes the global search/filter field, it will work and will upd
 
 If your table has a `selector` that already limits the results, the search happens within the selector results (i.e., your selector and the search selector are merged with an AND relationship).
 
+## Security
+
+The built-in document publication will provide any documents and fields that your table requests, which could be a security issue. You may set an `allow` option in your TabularTable definition to add some security checks. Set it to a function which will be passed a user ID and a list of fields or a selector. Return `false` if the given user should not have access to the requested fields.
+
+Alternatively, you can provide your own publish function, as described in the next section.
+
 ## Using a Custom Publish Function
 
-TODO
+You can set the `pub` option to the name of a publish function (e.g., `{pub: "tabular_Users"}`) if you want a table to use your own custom publish function. You might want to do this to do some more advanced security checks or to join data from multiple collections together into a single table. Your publish function must be written in a specific way:
+
+* It must accept three arguments: `tableName`, `ids`, and `fields`
+* It must publish all the documents where `_id` is in the `ids` array.
+* It should publish only the fields listed in the `fields` object, if one is provided.
+
+### Example
+
+Suppose we want a table of feedback submitted by users, which is stored in an `AppFeedback` collection, but we also want to display the email address of the user in the table. We'll use a custom publish function along with the [reywood:publish-composite](https://atmospherejs.com/reywood/publish-composite) package to do this. Also, we'll limit it to admins.
+
+*server/publish.js*
+
+```js
+Meteor.publishComposite("tabular_AppFeedback", function (tableName, ids, fields) {
+  check(tableName, String);
+  check(ids, [String]);
+  check(fields, Match.Optional(Object));
+
+  this.unblock(); // requires meteorhacks:unblock package
+
+  return {
+    find: function () {
+      this.unblock(); // requires meteorhacks:unblock package
+
+      // check for admin role with alanning:roles package
+      if (!Roles.userIsInRole(this.userId, 'admin')) {
+        return [];
+      }
+
+      return AppFeedback.find({_id: {$in: ids}}, {fields: fields});
+    },
+    children: [
+      {
+        find: function(feedback) {
+          this.unblock(); // requires meteorhacks:unblock package
+          // Publish the related user
+          return Meteor.users.find({_id: feedback.userId}, {limit: 1, fields: {emails: 1}, sort: {_id: 1}});
+        }
+      }
+    ]
+  };
+});
+```
+
+*common/helpers.js*
+
+```js
+// Define an email helper on AppFeedback documents using dburles:collection-helpers package.
+// We'll reference this in our table columns with "email()"
+AppFeedback.helpers({
+  email: function () {
+    var user = Meteor.users.findOne({_id: this.userId});
+    return user && user.emails[0].address;
+  }
+});
+```
+
+*common/tables.js*
+
+```js
+TabularTables.AppFeedback = new Tabular.Table({
+  name: "AppFeedback",
+  collection: AppFeedback,
+  pub: "tabular_AppFeedback",
+  order: [[0, "desc"]],
+  columns: [
+    {data: "date", title: "Date"},
+    {data: "email()", title: "Email"},
+    {data: "feedback", title: "Feedback"},
+    {
+      tmpl: Meteor.isClient && Template.appFeedbackCellDelete
+    }
+  ]
+});
+```
