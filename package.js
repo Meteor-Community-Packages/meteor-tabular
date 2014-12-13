@@ -12,6 +12,7 @@ Package.onUse(function(api) {
   api.export('Tabular');
 
   api.addFiles('common.js');
+  api.addFiles('client/tableRecords.js', 'client');
   api.addFiles('server/tabular.js', 'server');
   api.addFiles([
     'client/lib/jquery.dataTables.min.js',
