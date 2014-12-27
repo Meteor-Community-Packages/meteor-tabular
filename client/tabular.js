@@ -8,13 +8,14 @@ Template.tabular.helpers({
 
 Template.tabular.rendered = function () {
   var template = this, table, $tableElement = template.$('table');
+  var tabularTable = null;
 
   // We put this all in a reactive computation so that the component args,
   // such as the selector, can reactively change and the table will adjust.
   template.autorun(function () {
     var collection, pub, fields, selector, columns, options, searchFields = [];
     var data = Template.currentData();
-    var tabularTable = data && data.table;
+    tabularTable = data && data.table;
 
     if (!(tabularTable instanceof Tabular.Table)) {
         throw new Error("You must pass Tabular.Table instance as the table attribute");
