@@ -7,13 +7,12 @@ Template.tabular.helpers({
 });
 
 Template.tabular.rendered = function () {
-  var template = this, table, $tableElement = template.$('table'), selector, tabularTable;
+  var template = this, table, $tableElement = template.$('table'), selector, tabularTable, collection, pub, fields, columns, options, searchFields = [], data;
 
   // We put this all in a reactive computation so that the component args,
   // such as the selector, can reactively change and the table will adjust.
   template.autorun(function () {
-    var collection, pub, fields, columns, options, searchFields = [];
-    var data = Template.currentData();
+    data = Template.currentData();
     tabularTable = data && data.table;
 
     if (!(tabularTable instanceof Tabular.Table)) {
