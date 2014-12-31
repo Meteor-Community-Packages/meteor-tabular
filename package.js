@@ -1,3 +1,5 @@
+/* global Package */
+
 Package.describe({
   name: 'aldeed:tabular',
   summary: 'Datatables for large or small datasets in Meteor',
@@ -20,7 +22,6 @@ Package.onUse(function(api) {
     'client/tabular.html',
     'client/util.js',
     'client/tableRecords.js',
-    'client/tabularAjax.js',
     'client/tabular.js',
     // images
     'images/sort_asc.png',
