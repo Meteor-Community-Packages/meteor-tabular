@@ -9,7 +9,7 @@ Meteor.publish("tabular_genericPub", function (tableName, ids, fields) {
     }
 
     //check security function
-    if (table.allow && !table.allow(this.userId, fields)) {
+    if (table.options.allow && !table.options.allow(this.userId, fields)) {
         this.ready();
         return;
     }
