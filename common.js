@@ -1,3 +1,5 @@
+/* global Tabular:true, tablesByName:true, Mongo, _, Meteor */
+
 Tabular = {}; //exported
 
 tablesByName = {};
@@ -5,27 +7,43 @@ tablesByName = {};
 Tabular.Table = function (options) {
   var self = this;
 
-    if (!options) {
-        throw new Error("Tabular.Table options argument is required");
-    }
+  if (!options) {
+    throw new Error('Tabular.Table options argument is required');
+  }
 
-    if (!options.name) {
-        throw new Error("Tabular.Table options must specify name");
-    }
-    self.name = options.name;
+  if (!options.name) {
+    throw new Error('Tabular.Table options must specify name');
+  }
+  self.name = options.name;
 
-    if (!(options.collection instanceof Mongo.Collection)) {
-        throw new Error("Tabular.Table options must specify collection");
-    }
-    self.collection = options.collection;
+  if (!(options.collection instanceof Mongo.Collection)) {
+    throw new Error('Tabular.Table options must specify collection');
+  }
+  self.collection = options.collection;
 
-    self.pub = options.pub || "tabular_genericPub";
+  self.pub = options.pub || 'tabular_genericPub';
 
-    if (!options.columns) {
-        throw new Error("Tabular.Table options must specify columns");
-    }
+  // By default we use core `Meteor.subscribe`, but you can pass
+  // a subscription manager like `sub: new SubsManager({cacheLimit: 20, expireIn: 3})`
+  self.sub = options.sub || Meteor;
 
-    self.options = _.omit(options, "collection", "pub", "name");
+  self.onUnload = options.onUnload;
+  self.allow = options.allow;
+  self.allowFields = options.allowFields;
 
-    tablesByName[self.name] = self;
+  if (_.isArray(options.extraFields)) {
+    var fields = {};
+    _.each(options.extraFields, function (fieldName) {
+      fields[fieldName] = 1;
+    });
+    self.extraFields = fields;
+  }
+
+  if (!options.columns) {
+    throw new Error('Tabular.Table options must specify columns');
+  }
+
+  self.options = _.omit(options, 'collection', 'pub', 'sub', 'onUnload', 'allow', 'allowFields', 'extraFields', 'name');
+
+  tablesByName[self.name] = self;
 };

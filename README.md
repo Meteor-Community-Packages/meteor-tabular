@@ -3,9 +3,10 @@ aldeed:tabular
 
 A Meteor package that creates reactive [DataTables](http://datatables.net/) in an efficient way, allowing you to display the contents of enormous collections without impacting app performance.
 
-* Fast: Uses an intelligent automatic data subscription so that table data is not loaded until it's needed and is cached in the browser after that.
-* Reactive: As your collection data changes, so does your table.
+* Fast: Uses an intelligent automatic data subscription so that table data is not loaded until it's needed.
+* Reactive: As your collection data changes, so does your table. You can also reactively update the query selector if you provide your own filter buttons outside of the table.
 * Customizable: Anything you can do with the DataTables library is supported, and you can provide your own publish function to build custom tables or tables than join data from two collections.
+* Hot Code Push Ready: Remains on the same data page after a hot code push.
 
 Although this appears similar to the [jquery-datatables](https://github.com/LumaPictures/meteor-jquery-datatables) Meteor package, there are actually many differences:
 
@@ -71,12 +72,12 @@ Or add a [Mongo-style selector](https://docs.meteor.com/#/full/selectors) for a 
 ```js
 Template.myTemplate.helpers({
   selector: function () {
-    return {author: "Agatha Christie"};
+    return {author: "Agatha Christie"}; // this could be pulled from a Session var or something that is reactive
   }
 });
 ```
 
-Other than `name`, 'pub', and `collection`, all options passed to the `Tabular.Table` constructor are used as options when constructing the DataTable. See the [DataTables documentation](http://datatables.net/reference/option/).
+All non-custom options passed to the `Tabular.Table` constructor are used as options when constructing the DataTable. See the [DataTables documentation](http://datatables.net/reference/option/).
 
 ## Template Cells
 
@@ -88,7 +89,13 @@ You might have noticed this column definition in the example:
 }
 ```
 
-This is not part of the DataTables API. It's a special feature of this package. By passing a Spacebars Template object, that template will be rendered in the table cell. You can include a button and/or use helpers and events. In your template and helpers, `this` is set to the document for the current row. Here's an example of how you might do the `bookCheckOutCell` template:
+This is not part of the DataTables API. It's a special feature of this package. By passing a Spacebars Template object, that template will be rendered in the table cell. You can include a button and/or use helpers and events. In your template and helpers, `this` is set to the document for the current row.
+
+*Note: The `Meteor.isClient && ` is there because tables must be defined in common code, which runs on the server and client. But the `Template` object is not defined in server code, so we need to prevent errors by setting `tmpl` only on the client.*
+
+The `tmpl` option can be used with or without the `data` option.
+
+Here's an example of how you might do the `bookCheckOutCell` template:
 
 HTML:
 
@@ -114,19 +121,92 @@ If your table includes the global search/filter field, it will work and will upd
 
 If your table has a `selector` that already limits the results, the search happens within the selector results (i.e., your selector and the search selector are merged with an AND relationship).
 
+## Using Collection Helpers
+
+The DataTables library supports calling functions on the row data by appending your `data` string with `()`. This can be used along with the `dburles:collection-helpers` package (or your own collection transform). For example:
+
+*Relevant part of your table definition:*
+
+```js
+columns: [
+  {data: "fullName()", title: "Full Name"},
+]
+```
+
+*A collection helper you've defined in client or common code:*
+
+```js
+People.helpers({
+  fullName: function () {
+    return this.firstName + ' ' + this.lastName;
+  }
+});
+```
+
+Note that for this to work properly, you must ensure that the `firstName` and `lastName` fields are published. If they're included as the `data` for other columns, then there is no problem. If not, you can use the `extraFields` option or your own custom publish function.
+
+## Publishing Extra Fields
+
+If your table's templates or helper functions require fields that are not included in the data, you can tell Tabular to publish these fields by including them in the `extraFields` array option:
+
+```js
+TabularTables.People = new Tabular.Table({
+  // other properties...
+  extraFields: ['firstName', 'lastName']
+});
+```
+
 ## Security
 
-The built-in document publication will provide any documents and fields that your table requests, which could be a security issue. You may set an `allow` option in your TabularTable definition to add some security checks. Set it to a function which will be passed a user ID and a list of fields or a selector. Return `false` if the given user should not have access to the requested fields.
+You can optionally provide an `allow` and/or `allowFields` function to control which clients can get the published data. These are used by the built-in publications on the server only.
 
-Alternatively, you can provide your own publish function, as described in the next section.
+```js
+TabularTables.Books = new Tabular.Table({
+  // other properties...
+  allow: function (userId) {
+    return false; // don't allow this person to subscribe to the data
+  },
+  allowFields: function (userId, fields) {
+    return false; // don't allow this person to subscribe to the data
+  }
+});
+```
+
+*Note: Every time the table data changes, you can expect `allow` to be called 1 or 2 times and `allowFields` to be called 0 or 1 times. If the table uses your own custom publish function, then `allow` will be called 1 time and `allowFields` will never be called.*
+
+If you need to be sure that certain fields are never published or if different users can access different fields, use `allowFields`. Otherwise just use `allow`.
+
+## Caching the Documents
+
+By default, a normal `Meteor.subscribe` is used for the current page's table data. This subscription is stopped and a new one replaces it whenever you switch pages. This means that if your table shows 10 results per page, your client collection will have 10 documents in it on page 1. When you switch to page 2, your client collection will still have only 10 documents in it, but they will be the next 10.
+
+If you want to override this behavior such that documents displayed in the table remain cached on the client for some time, you can add the `meteorhacks:subs-manager` package to your app and set the `sub` option on your `Tabular.Table`. This can make the table a bit faster and reduce unnecessary subscription traffic, but may not be a good idea if the data is extremely sensitive.
+
+```js
+TabularTables.Books = new Tabular.Table({
+  // other properties...
+  sub: new SubsManager()
+});
+```
+
+## Hooks
+
+Currently there is only one hook provided: `onUnload`
 
 ## Using a Custom Publish Function
 
-You can set the `pub` option to the name of a publish function (e.g., `{pub: "tabular_Users"}`) if you want a table to use your own custom publish function. You might want to do this to do some more advanced security checks or to join data from multiple collections together into a single table. Your publish function must be written in a specific way:
+This package takes care of publication and subscription for you using two built-in publications. The first publication determines the list of document `_id`s that
+are needed by the table. This is a complex publication and there should be no need to override it. The second publication publishes the actual documents with those `_id`s.
 
-* It must accept three arguments: `tableName`, `ids`, and `fields`
-* It must publish all the documents where `_id` is in the `ids` array.
-* It should publish only the fields listed in the `fields` object, if one is provided.
+The most common reason to override the second publication with your own custom one is to publish documents from related collections at the same time.
+
+To tell Tabular to use your custom publish function, pass the publication name as the `pub` option. Your function:
+
+* must accept and check three arguments: `tableName`, `ids`, and `fields`
+* must publish all the documents where `_id` is in the `ids` array.
+* should publish only the fields listed in the `fields` object, if one is provided.
+* should do any necessary security checks
+* may also publish other data necessary for your table
 
 ### Example
 
@@ -137,7 +217,7 @@ Suppose we want a table of feedback submitted by users, which is stored in an `A
 ```js
 Meteor.publishComposite("tabular_AppFeedback", function (tableName, ids, fields) {
   check(tableName, String);
-  check(ids, [String]);
+  check(ids, Array);
   check(fields, Match.Optional(Object));
 
   this.unblock(); // requires meteorhacks:unblock package
@@ -186,6 +266,10 @@ TabularTables.AppFeedback = new Tabular.Table({
   name: "AppFeedback",
   collection: AppFeedback,
   pub: "tabular_AppFeedback",
+  allow: function (userId) {
+    // check for admin role with alanning:roles package
+    return Roles.userIsInRole(userId, 'admin');
+  },
   order: [[0, "desc"]],
   columns: [
     {data: "date", title: "Date"},
