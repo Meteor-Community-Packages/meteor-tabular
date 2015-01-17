@@ -11,6 +11,8 @@ Package.onUse(function(api) {
   api.versionsFrom(['METEOR@0.9.4', 'METEOR@1.0']);
   api.use(['check', 'underscore', 'mongo', 'blaze', 'templating', 'reactive-var']);
 
+  api.use(['meteorhacks:subs-manager@1.2.0'], ['client', 'server'], {weak: true});
+
   api.export('Tabular');
 
   api.addFiles('common.js');

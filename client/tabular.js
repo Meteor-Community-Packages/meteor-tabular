@@ -1,4 +1,4 @@
-/* global _, Template, Tabular, Blaze, cleanFieldName, ReactiveVar, Meteor */
+/* global _, Template, Tabular, Blaze, Util, ReactiveVar, Session, Meteor, tablesByName */
 
 Template.tabular.helpers({
   atts: function () {
@@ -15,7 +15,7 @@ Template.tabular.rendered = function () {
   template.tabular.selector = new ReactiveVar({});
   template.tabular.pubSelector = new ReactiveVar({});
   template.tabular.skip = new ReactiveVar(0);
-  template.tabular.limit = new ReactiveVar(0);
+  template.tabular.limit = new ReactiveVar(10);
   template.tabular.order = new ReactiveVar(null, function (oldVal, newVal) {
     if (oldVal === newVal) {
       return true;
@@ -38,6 +38,7 @@ Template.tabular.rendered = function () {
   template.tabular.options = new ReactiveVar({});
   template.tabular.docPub = new ReactiveVar(null);
   template.tabular.collection = new ReactiveVar(null);
+  template.tabular.ready = new ReactiveVar(false);
   template.tabular.data = [];
   template.tabular.recordsTotal = 0;
   template.tabular.recordsFiltered = 0;
@@ -52,6 +53,7 @@ Template.tabular.rendered = function () {
     ajax: function (data, callback/*, settings*/) {
       // Update skip
       template.tabular.skip.set(data.start);
+      Session.set('Tabular.LastSkip', data.start);
       // Update limit
       template.tabular.limit.set(data.length);
       // Update order
@@ -59,7 +61,9 @@ Template.tabular.rendered = function () {
       // Update searchString
       template.tabular.searchString.set((data.search && data.search.value) || null);
 
-      //Tracker.flush();
+      // We're ready to subscribe to the data.
+      // Matters on the first run only.
+      template.tabular.ready.set(true);
 
       callback({
         draw: data.draw,
@@ -86,7 +90,10 @@ Template.tabular.rendered = function () {
   var lastTableName;
   template.autorun(function () {
     var data = Template.currentData();
-    var tabularTable = data && data.table;
+
+    // We get the current TabularTable instance, and cache it on the
+    // template instance for access elsewhere
+    var tabularTable = template.tabular.tableDef = data && data.table;
 
     if (!(tabularTable instanceof Tabular.Table)) {
       throw new Error("You must pass Tabular.Table instance as the table attribute");
@@ -97,6 +104,17 @@ Template.tabular.rendered = function () {
     if (tabularTable.name === lastTableName) {
       return;
     }
+
+    // If we reactively changed the `table` attribute, run
+    // onUnload for the previous table
+    if (lastTableName !== undefined) {
+      var lastTableDef = tablesByName[lastTableName];
+      if (lastTableDef && typeof lastTableDef.onUnload === 'function') {
+        lastTableDef.onUnload();
+      }
+    }
+
+    // Cache this table name as the last table name for next run
     lastTableName = tabularTable.name;
 
     var columns = _.clone(tabularTable.options.columns);
@@ -109,7 +127,6 @@ Template.tabular.rendered = function () {
       // and then remove it.
       var tmpl = col.tmpl;
       if (tmpl) {
-        col.data = null;
         col.defaultContent = "";
         col.orderable = false;
         col.createdCell = function (cell, cellData, rowData) {
@@ -136,15 +153,24 @@ Template.tabular.rendered = function () {
           return;
         }
 
-        dataProp = cleanFieldName(dataProp);
-        fields[dataProp] = 1;
+        fields[Util.cleanFieldName(dataProp)] = 1;
 
         // DataTables says default value for col.searchable is `true`,
         // so we will search on all columns that haven't been set to
         // `false`.
         if (col.searchable !== false) {
-          searchFields.push(dataProp);
+          searchFields.push(Util.cleanFieldNameForSearch(dataProp));
         }
+      }
+
+      // If we're displaying a template for this field,
+      // don't pass the data prop along to DataTables.
+      // This prevents both the data and the template
+      // from displaying in the same cell. We wait until
+      // now to do this to be sure that we still include
+      // the data prop in the list of fields.
+      if (tmpl) {
+        col.data = null;
       }
     });
 
@@ -170,10 +196,14 @@ Template.tabular.rendered = function () {
 
     // TODO support the nested arrays format for sort
     // and ignore instance functions like "foo()"
-    var sort = _.map(order, function (ord) {
+    var sort = [];
+    _.each(order, function (ord) {
       var propName = columns[ord.column].data;
-      return [propName, ord.dir];
+      if (typeof propName === 'string') {
+        sort.push([propName, ord.dir]);
+      }
     });
+
     template.tabular.sort.set(sort);
   });
 
@@ -207,7 +237,13 @@ Template.tabular.rendered = function () {
   // current page of the table, plus some aggregate
   // numbers that DataTables needs in order to show the paging.
   // The server will reactively keep this info accurate.
+  // It's not necessary to call stop
+  // on subscriptions that are within autorun computations.
   template.autorun(function () {
+    if (!template.tabular.ready.get()) {
+      return;
+    }
+
     Meteor.subscribe(
       "tabular_getInfo",
       template.tabular.tableName.get(),
@@ -223,7 +259,12 @@ Template.tabular.rendered = function () {
   // only when the `table` attribute changes reactively.
   template.autorun(function () {
     var userOptions = template.tabular.options.get();
-    var options = _.extend({}, ajaxOptions, userOptions);
+    var options = _.extend({
+      // unless the user provides her own displayStart,
+      // we use a value from Session. This keeps the
+      // same page selected after a hot code push.
+      displayStart: Session.get('Tabular.LastSkip')
+    }, ajaxOptions, userOptions);
 
     // After the first time, we need to destroy before rebuilding.
     if (table) {
@@ -251,9 +292,16 @@ Template.tabular.rendered = function () {
     template.tabular.recordsTotal = tableInfo.recordsTotal || 0;
     template.tabular.recordsFiltered = tableInfo.recordsFiltered || 0;
 
+    // In some cases, there is no point in subscribing to nothing
+    if (_.isEmpty(tableInfo) ||
+        template.tabular.recordsTotal === 0 ||
+        template.tabular.recordsFiltered === 0) {
+      return;
+    }
+
     console.log("tableInfo", tableInfo);
 
-    Meteor.subscribe(
+    template.tabular.tableDef.sub.subscribe(
       template.tabular.docPub.get(),
       tableName,
       tableInfo.ids || [],
@@ -262,14 +310,22 @@ Template.tabular.rendered = function () {
   });
 
   template.autorun(function () {
+    // Rerun when the `table` attribute changes
     var tableName = template.tabular.tableName.get();
+    // Or when the requested list of records changes,
+    // such as when paging, searching, etc.
     var tableInfo = Tabular.getRecord(tableName);
+    // Get the collection that we're showing in the table
     var collection = template.tabular.collection.get();
 
     if (!collection || !tableInfo) {
       return;
     }
 
+    // Build options object to pass to `find`.
+    // It's important that we use the same options
+    // that were used in generating the list of `_id`s
+    // on the server.
     var findOptions = {};
     var fields = template.tabular.fields.get();
     if (fields) {
@@ -281,12 +337,25 @@ Template.tabular.rendered = function () {
       findOptions.sort = sort;
     }
 
+    // Get the updated list of docs we should be showing
     var cursor = collection.find({_id: {$in: tableInfo.ids}}, findOptions);
 
+    // We're subscribing to the docs just in time, so there's
+    // a good chance that they aren't all sent to the client yet.
+    // We'll stop here if we didn't find all the docs we asked for.
+    // This will rerun one or more times as the docs are received
+    // from the server, and eventually we'll have them all.
+    // Without this check in here, there's a lot of flashing in the
+    // table as rows are added.
+    if (cursor.count() < tableInfo.ids.length) {
+      return;
+    }
+
+    // Get the data as an array, for consumption by DataTables
+    // in the ajax function.
     template.tabular.data = cursor.fetch();
 
-    // tell DataTables to call the ajax function again
-    console.log("reload table");
+    // Tell DataTables to call the ajax function again
     table.ajax.reload(null, false);
   });
 
@@ -303,4 +372,13 @@ Template.tabular.rendered = function () {
 //      }
 //    }
 //  };
+};
+
+Template.tabular.destroyed = function () {
+  // Run a user-provided onUnload function
+  if (this.tabular &&
+      this.tabular.tableDef &&
+      typeof this.tabular.tableDef.onUnload === 'function') {
+    this.tabular.tableDef.onUnload();
+  }
 };

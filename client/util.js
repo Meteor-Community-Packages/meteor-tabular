@@ -1,4 +1,8 @@
-cleanFieldName = function cleanFieldName(field) {
+/* global Util:true */
+
+Util = {};
+
+Util.cleanFieldName = function cleanFieldName(field) {
   // for field names with a dot, we just need
   // the top level field name
   var dot = field.indexOf(".");
@@ -10,4 +14,10 @@ cleanFieldName = function cleanFieldName(field) {
   field = field.split('[')[0];
 
   return field;
+};
+
+Util.cleanFieldNameForSearch = function cleanFieldNameForSearch(field) {
+  // If it's referencing an array, replace the brackets
+  // This will only work with an object which doesn't have ["foo"]
+  return field.replace(/\[\w+\]/, "");
 };
