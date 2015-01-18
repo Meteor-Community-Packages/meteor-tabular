@@ -299,7 +299,7 @@ Template.tabular.rendered = function () {
       return;
     }
 
-    console.log("tableInfo", tableInfo);
+    //console.log("tableInfo", tableInfo);
 
     template.tabular.tableDef.sub.subscribe(
       template.tabular.docPub.get(),
