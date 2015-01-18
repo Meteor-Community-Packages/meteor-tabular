@@ -259,12 +259,15 @@ Template.tabular.rendered = function () {
   // only when the `table` attribute changes reactively.
   template.autorun(function () {
     var userOptions = template.tabular.options.get();
-    var options = _.extend({
-      // unless the user provides her own displayStart,
-      // we use a value from Session. This keeps the
-      // same page selected after a hot code push.
-      displayStart: Session.get('Tabular.LastSkip')
-    }, ajaxOptions, userOptions);
+
+    // unless the user provides her own displayStart,
+    // we use a value from Session. This keeps the
+    // same page selected after a hot code push.
+    var displayStart = Tracker.nonreactive(function () {
+      return Session.get('Tabular.LastSkip');
+    });
+
+    var options = _.extend({displayStart: displayStart}, ajaxOptions, userOptions);
 
     // After the first time, we need to destroy before rebuilding.
     if (table) {
