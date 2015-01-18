@@ -281,3 +281,18 @@ TabularTables.AppFeedback = new Tabular.Table({
   ]
 });
 ```
+
+## Tips
+
+Some useful tips
+
+### Detect row clicks and get row data
+
+```js
+Template.myTemplate.events({
+  'click tr': function (event) {
+    var dataTable = $(event.target).closest('table').DataTable();
+    var rowData = dataTable.row(event.currentTarget).data();
+  }
+});
+```
