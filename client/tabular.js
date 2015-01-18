@@ -1,4 +1,4 @@
-/* global _, Template, Tabular, Blaze, Util, ReactiveVar, Session, Meteor, tablesByName */
+/* global _, Template, Tabular, Tracker, Blaze, Util, ReactiveVar, Session, Meteor, tablesByName */
 
 Template.tabular.helpers({
   atts: function () {
