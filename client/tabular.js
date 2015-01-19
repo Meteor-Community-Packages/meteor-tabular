@@ -53,7 +53,6 @@ Template.tabular.rendered = function () {
     ajax: function (data, callback/*, settings*/) {
       // Update skip
       template.tabular.skip.set(data.start);
-      console.log(data.start);
       Session.set('Tabular.LastSkip', data.start);
       // Update limit
       template.tabular.limit.set(data.length);
