@@ -177,7 +177,7 @@ Template.tabular.rendered = function () {
     template.tabular.columns.set(columns);
     template.tabular.fields.set(fields);
     template.tabular.searchFields.set(searchFields);
-    template.tabular.searchCaseInsensitive.set((tabularTable.options && tabularTable.options.search && tabularTable.options.search.caseInsensitive) || false);
+    template.tabular.searchCaseInsensitive.set((tabularTable.options && tabularTable.options.search && tabularTable.options.search.caseInsensitive) || true);
     template.tabular.options.set(tabularTable.options);
     template.tabular.tableName.set(tabularTable.name);
     template.tabular.docPub.set(tabularTable.pub);
