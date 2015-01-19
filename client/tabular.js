@@ -53,6 +53,7 @@ Template.tabular.rendered = function () {
     ajax: function (data, callback/*, settings*/) {
       // Update skip
       template.tabular.skip.set(data.start);
+      console.log(data.start);
       Session.set('Tabular.LastSkip', data.start);
       // Update limit
       template.tabular.limit.set(data.length);
@@ -270,17 +271,18 @@ Template.tabular.rendered = function () {
   // Build the table. We rerun this only when the table
   // options specified by the user changes, which should be
   // only when the `table` attribute changes reactively.
-  template.autorun(function () {
+  template.autorun(function (c) {
     var userOptions = template.tabular.options.get();
+    var options = _.extend(ajaxOptions, userOptions);
 
     // unless the user provides her own displayStart,
     // we use a value from Session. This keeps the
     // same page selected after a hot code push.
-    var displayStart = Tracker.nonreactive(function () {
-      return Session.get('Tabular.LastSkip');
-    });
-
-    var options = _.extend({displayStart: displayStart}, ajaxOptions, userOptions);
+    if (c.firstRun && !('displayStart' in options)) {
+      options.displayStart = Tracker.nonreactive(function () {
+        return Session.get('Tabular.LastSkip');
+      });
+    }
 
     // After the first time, we need to destroy before rebuilding.
     if (table) {
@@ -391,6 +393,8 @@ Template.tabular.rendered = function () {
 };
 
 Template.tabular.destroyed = function () {
+  // Clear last skip tracking
+  Session.set('Tabular.LastSkip', 0);
   // Run a user-provided onUnload function
   if (this.tabular &&
       this.tabular.tableDef &&
