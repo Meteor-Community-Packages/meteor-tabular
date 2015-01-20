@@ -63,7 +63,9 @@ And then reference in one of your templates where you want it to appear:
 {{> tabular table=TabularTables.Books class="table table-striped table-bordered table-condensed"}}
 ```
 
-Or add a [Mongo-style selector](https://docs.meteor.com/#/full/selectors) for a table that displays only one part of a collection:
+## Displaying Only Part of a Collection's Data Set
+
+Add a [Mongo-style selector](https://docs.meteor.com/#/full/selectors) to your `tabular` component for a table that displays only one part of a collection:
 
 ```html
 {{> tabular table=TabularTables.Books selector=selector class="table table-striped table-bordered table-condensed"}}
@@ -77,7 +79,20 @@ Template.myTemplate.helpers({
 });
 ```
 
-All non-custom options passed to the `Tabular.Table` constructor are used as options when constructing the DataTable. See the [DataTables documentation](http://datatables.net/reference/option/).
+## Passing Options to the DataTable
+
+The [DataTables documentation](http://datatables.net/reference/option/) lists a huge variety of available table options and callbacks. You may add any of these to your `Tabular.Table` constructor options and they will be used as options when constructing the DataTable.
+
+Example:
+
+```js
+TabularTables.Books = new Tabular.Table({
+  // other properties...
+  createdRow: function( row, data, dataIndex ) {
+    // set row class based on row data
+  }
+});
+```
 
 ## Template Cells
 
