@@ -3,7 +3,7 @@
 Package.describe({
   name: 'aldeed:tabular',
   summary: 'Datatables for large or small datasets in Meteor',
-  version: '1.0.3',
+  version: '1.0.4',
   git: 'https://github.com/aldeed/meteor-tabular.git'
 });
 
@@ -24,6 +24,8 @@ Package.onUse(function(api) {
     'client/tabular.html',
     'client/util.js',
     'client/tableRecords.js',
+    'client/tableInit.js',
+    'client/pubSelector.js',
     'client/tabular.js',
     // images
     'images/sort_asc.png',

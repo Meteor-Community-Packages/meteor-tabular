@@ -1,4 +1,4 @@
-/* global _, Template, Tabular, Tracker, Blaze, Util, ReactiveVar, Session, Meteor, tablesByName */
+/* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, tablesByName, tableInit, getPubSelector, Util */
 
 Template.tabular.helpers({
   atts: function () {
@@ -9,37 +9,25 @@ Template.tabular.helpers({
 });
 
 Template.tabular.rendered = function () {
-  var template = this, table, $tableElement = template.$('table');
+  var template = this,
+      table, resetTablePaging = false,
+      $tableElement = template.$('table');
 
   template.tabular = {};
-  template.tabular.selector = new ReactiveVar({});
+  template.tabular.data = [];
   template.tabular.pubSelector = new ReactiveVar({});
   template.tabular.skip = new ReactiveVar(0);
   template.tabular.limit = new ReactiveVar(10);
-  template.tabular.order = new ReactiveVar(null, function (oldVal, newVal) {
-    if (oldVal === newVal) {
-      return true;
-    }
-    var areSame = false;
-    if (_.isArray(oldVal) && _.isArray(newVal)) {
-      areSame = _.every(newVal, function (obj, i) {
-        return _.isEqual(obj, oldVal[i]);
-      });
-    }
-    return areSame;
-  });
-  template.tabular.sort = new ReactiveVar(null);
-  template.tabular.columns = new ReactiveVar(null);
+  template.tabular.sort = new ReactiveVar(null, Util.sortsAreEqual);
+  template.tabular.columns = null;
   template.tabular.fields = new ReactiveVar(null);
-  template.tabular.searchString = new ReactiveVar(null);
-  template.tabular.searchFields = new ReactiveVar(null);
-  template.tabular.searchCaseInsensitive = new ReactiveVar(true);
+  template.tabular.searchFields = null;
+  template.tabular.searchCaseInsensitive = true;
   template.tabular.tableName = new ReactiveVar(null);
   template.tabular.options = new ReactiveVar({});
   template.tabular.docPub = new ReactiveVar(null);
   template.tabular.collection = new ReactiveVar(null);
   template.tabular.ready = new ReactiveVar(false);
-  template.tabular.data = [];
   template.tabular.recordsTotal = 0;
   template.tabular.recordsFiltered = 0;
 
@@ -51,15 +39,27 @@ Template.tabular.rendered = function () {
     // define the function that DataTables will call upon first load and whenever
     // we tell it to reload data, such as when paging, etc.
     ajax: function (data, callback/*, settings*/) {
+      // When DataTables requests data, first we set
+      // the new skip, limit, order, and pubSelector values
+      // that DataTables has requested. These trigger
+      // the first subscription, which will then trigger the
+      // second subscription.
+
       // Update skip
       template.tabular.skip.set(data.start);
       Session.set('Tabular.LastSkip', data.start);
       // Update limit
       template.tabular.limit.set(data.length);
-      // Update order
-      template.tabular.order.set(data.order);
-      // Update searchString
-      template.tabular.searchString.set((data.search && data.search.value) || null);
+      // Update sort
+      template.tabular.sort.set(Util.getMongoSort(data.order, template.tabular.columns));
+      // Update pubSelector
+      var pubSelector = getPubSelector(
+        template.tabular.selector,
+        (data.search && data.search.value) || null,
+        template.tabular.searchFields,
+        template.tabular.searchCaseInsensitive
+      );
+      template.tabular.pubSelector.set(pubSelector);
 
       // We're ready to subscribe to the data.
       // Matters on the first run only.
@@ -71,37 +71,39 @@ Template.tabular.rendered = function () {
         recordsFiltered: template.tabular.recordsFiltered,
         data: template.tabular.data
       });
+
     }
   };
 
-  // React to selector changes
-  template.autorun(function () {
-    var data = Template.currentData();
-    if (!data) {
-      return;
-    }
-    template.tabular.selector.set(data.selector);
-  });
-
   // Reactively determine table columns, fields, and searchFields.
-  // This will rerun whenever the current template data changes,
-  // but we will do something only when the `table` attribute
-  // changes.
+  // This will rerun whenever the current template data changes.
   var lastTableName;
   template.autorun(function () {
     var data = Template.currentData();
 
+    if (!data) {return;}
+
     // We get the current TabularTable instance, and cache it on the
     // template instance for access elsewhere
-    var tabularTable = template.tabular.tableDef = data && data.table;
+    var tabularTable = template.tabular.tableDef = data.table;
 
     if (!(tabularTable instanceof Tabular.Table)) {
       throw new Error("You must pass Tabular.Table instance as the table attribute");
     }
 
-    // We care only about hot swapping the table attribute.
-    // For anything else, we ignore it.
+    // Always update the selector reactively
+    template.tabular.selector = data.selector;
+
+    // The remaining stuff relates to changing the `table`
+    // attribute. If we didn't change it, we can stop here,
+    // but we need to reload the table if this is not the first
+    // run
     if (tabularTable.name === lastTableName) {
+      if (table) {
+        // passing `false` as the second arg tells it to
+        // reset the paging
+        table.ajax.reload(null, true);
+      }
       return;
     }
 
@@ -117,135 +119,24 @@ Template.tabular.rendered = function () {
     // Cache this table name as the last table name for next run
     lastTableName = tabularTable.name;
 
-    var columns = _.clone(tabularTable.options.columns);
-    var fields = {}, searchFields = [];
+    // Figure out and update the columns, fields, and searchFields
+    tableInit(tabularTable, template);
 
-    // Loop through the provided columns object
-    _.each(columns, function (col) {
-      // The `tmpl` column option is special for this
-      // package. We parse it into other column options
-      // and then remove it.
-      var tmpl = col.tmpl;
-      if (tmpl) {
-        col.defaultContent = "";
-        col.orderable = false;
-        col.createdCell = function (cell, cellData, rowData) {
-          Blaze.renderWithData(tmpl, rowData, cell);
-        };
-        delete col.tmpl;
-      }
-
-      // Automatically protect against errors from null and undefined
-      // values
-      if (!("defaultContent" in col)) {
-        col.defaultContent = "";
-      }
-
-      // Build the list of field names we want included
-      var dataProp = col.data;
-      if (typeof dataProp === "string") {
-        // If it's referencing an instance function, don't
-        // include it. Prevent sorting and searching because
-        // our pub function won't be able to do it.
-        if (dataProp.indexOf("()") !== -1) {
-          col.sortable = false;
-          col.searchable = false;
-          return;
-        }
-
-        fields[Util.cleanFieldName(dataProp)] = 1;
-
-        // DataTables says default value for col.searchable is `true`,
-        // so we will search on all columns that haven't been set to
-        // `false`.
-        if (col.searchable !== false) {
-          searchFields.push(Util.cleanFieldNameForSearch(dataProp));
-        }
-      }
-
-      // If we're displaying a template for this field,
-      // don't pass the data prop along to DataTables.
-      // This prevents both the data and the template
-      // from displaying in the same cell. We wait until
-      // now to do this to be sure that we still include
-      // the data prop in the list of fields.
-      if (tmpl) {
-        col.data = null;
-      }
-    });
-
-    template.tabular.columns.set(columns);
-    template.tabular.fields.set(fields);
-    template.tabular.searchFields.set(searchFields);
-    template.tabular.searchCaseInsensitive.set((tabularTable.options && tabularTable.options.search && tabularTable.options.search.caseInsensitive) || true);
+    // Set/update everything else
+    template.tabular.searchCaseInsensitive = (tabularTable.options && tabularTable.options.search && tabularTable.options.search.caseInsensitive) || true;
     template.tabular.options.set(tabularTable.options);
     template.tabular.tableName.set(tabularTable.name);
     template.tabular.docPub.set(tabularTable.pub);
     template.tabular.collection.set(tabularTable.collection);
-  });
 
-  // Reactively determine sort. We take the DataTables
-  // `order` format and convert it into a mongo sort
-  // array.
-  template.autorun(function () {
-    var order = template.tabular.order.get();
-    var columns = template.tabular.columns.get();
-    if (!order || !columns) {
-      return;
+    if (table) {
+      // passing `true` as the second arg tells it to
+      // reset the paging
+      table.ajax.reload(null, true);
     }
-
-    // TODO support the nested arrays format for sort
-    // and ignore instance functions like "foo()"
-    var sort = [];
-    _.each(order, function (ord) {
-      var propName = columns[ord.column].data;
-      if (typeof propName === 'string') {
-        sort.push([propName, ord.dir]);
-      }
-    });
-
-    template.tabular.sort.set(sort);
   });
 
-  // React to selector and search changes to create the
-  // selector that we use to subscribe.
-  template.autorun(function () {
-    var selector = template.tabular.selector.get();
-    var searchString = template.tabular.searchString.get();
-    var searchFields = template.tabular.searchFields.get();
-    var searchCaseInsensitive = template.tabular.searchCaseInsensitive.get();
-
-    if (!searchString || !searchFields || searchFields.length === 0) {
-      template.tabular.pubSelector.set(selector);
-      return;
-    }
-
-    // See if we can resolve the search string to a number,
-    // in which case we use an extra query because $regex
-    // matches string fields only.
-    var numSearchString = Number(searchString), searches = [];
-
-    _.each(searchFields, function(field) {
-      var m1 = {}, m2 = {};
-
-      // String search
-      m1[field] = {$regex: searchString};
-      // DataTables searches are case insensitive by default
-      if (searchCaseInsensitive !== false) {
-        m1[field].$options = "i";
-      }
-      searches.push(m1);
-
-      // Number search
-      if (!isNaN(numSearchString)) {
-        m2[field] = numSearchString;//{$where: '/' + numSearchString + '/.test(this.' + field + ')'};
-        searches.push(m2);
-      }
-    });
-
-    template.tabular.pubSelector.set(_.extend({}, selector, {$or: searches}));
-  });
-
+  // First Subscription
   // Subscribe to an array of _ids that should be on the
   // current page of the table, plus some aggregate
   // numbers that DataTables needs in order to show the paging.
@@ -267,34 +158,7 @@ Template.tabular.rendered = function () {
     );
   });
 
-  // Build the table. We rerun this only when the table
-  // options specified by the user changes, which should be
-  // only when the `table` attribute changes reactively.
-  template.autorun(function (c) {
-    var userOptions = template.tabular.options.get();
-    var options = _.extend(ajaxOptions, userOptions);
-
-    // unless the user provides her own displayStart,
-    // we use a value from Session. This keeps the
-    // same page selected after a hot code push.
-    if (c.firstRun && !('displayStart' in options)) {
-      options.displayStart = Tracker.nonreactive(function () {
-        return Session.get('Tabular.LastSkip');
-      });
-    }
-
-    // After the first time, we need to destroy before rebuilding.
-    if (table) {
-      var dt = $tableElement.DataTable();
-      if (dt) {
-        dt.destroy();
-      }
-    }
-
-    // We start with an empty table. Data will be populated by ajax function.
-    table = $tableElement.DataTable(options);
-  });
-
+  // Second Subscription
   // Reactively subscribe to the documents with _ids given to us. Limit the
   // fields to only those we need to display. It's not necessary to call stop
   // on subscriptions that are within autorun computations.
@@ -326,14 +190,55 @@ Template.tabular.rendered = function () {
     );
   });
 
+  // Build the table. We rerun this only when the table
+  // options specified by the user changes, which should be
+  // only when the `table` attribute changes reactively.
+  template.autorun(function (c) {
+    var userOptions = template.tabular.options.get();
+    var options = _.extend(ajaxOptions, userOptions);
+
+    // unless the user provides her own displayStart,
+    // we use a value from Session. This keeps the
+    // same page selected after a hot code push.
+    if (c.firstRun && !('displayStart' in options)) {
+      options.displayStart = Tracker.nonreactive(function () {
+        return Session.get('Tabular.LastSkip');
+      });
+    }
+
+    // After the first time, we need to destroy before rebuilding.
+    if (table) {
+      var dt = $tableElement.DataTable();
+      if (dt) {
+        dt.destroy();
+      }
+    }
+
+    // We start with an empty table.
+    // Data will be populated by ajax function now.
+    table = $tableElement.DataTable(options);
+  });
+
   template.autorun(function () {
-    // Rerun when the `table` attribute changes
-    var tableName = template.tabular.tableName.get();
-    // Or when the requested list of records changes,
-    // such as when paging, searching, etc.
+    // Get table name non-reactively
+    var tableName = Tracker.nonreactive(function () {
+      return template.tabular.tableName.get();
+    });
+    // Get the collection that we're showing in the table non-reactively
+    var collection = Tracker.nonreactive(function () {
+      return template.tabular.collection.get();
+    });
+
+    // React when the requested list of records changes.
+    // This can happen for various reasons.
+    // * DataTables reran ajax due to sort changing.
+    // * DataTables reran ajax due to page changing.
+    // * DataTables reran ajax due to results-per-page changing.
+    // * DataTables reran ajax due to search terms changing.
+    // * `selector` attribute changed reactively
+    // * Docs were added/changed/removed by this user or
+    //   another user, causing visible result set to change.
     var tableInfo = Tabular.getRecord(tableName);
-    // Get the collection that we're showing in the table
-    var collection = template.tabular.collection.get();
 
     if (!collection || !tableInfo) {
       return;
@@ -368,27 +273,28 @@ Template.tabular.rendered = function () {
       return;
     }
 
-    // Get the data as an array, for consumption by DataTables
-    // in the ajax function.
+    // Get data as array for DataTables to consume in the ajax function
     template.tabular.data = cursor.fetch();
 
-    // Tell DataTables to call the ajax function again
-    table.ajax.reload(null, false);
+    // For these types of reactive changes, we don't want to
+    // reset the page we're on, so we pass `false` as second arg.
+    // The exception is if we changed the results-per-page number,
+    // in which cases `resetTablePaging` will be `true` and we will do so.
+    if (table) {
+      if (resetTablePaging) {
+        table.ajax.reload(null, true);
+        resetTablePaging = false;
+      } else {
+        table.ajax.reload(null, false);
+      }
+    }
+
   });
 
-  // clean up after ourselves XXX not working
-  // need beforeDestroyed callback
-  // see https://github.com/meteor/meteor/issues/2141
-//  this.firstNode._uihooks = {
-//    removeElement: function (node, done) {
-//      console.log("table cleanup");
-//      if ($.fn.DataTable.fnIsDataTable(node)) {
-//        var dt = $(node).DataTable();
-//        console.log("dt", dt);
-//        dt && dt.destroy();
-//      }
-//    }
-//  };
+  // force table paging to reset to first page when we change page length
+  $tableElement.on('length.dt', function () {
+    resetTablePaging = true;
+  });
 };
 
 Template.tabular.destroyed = function () {
