@@ -63,6 +63,10 @@ tableInit = function tableInit(tabularTable, template) {
     }
   });
 
+  if (typeof tabularTable.extraFields === 'object') {
+    _.extend(fields, tabularTable.extraFields);
+  }
+
   template.tabular.columns = columns;
   template.tabular.fields.set(fields);
   template.tabular.searchFields = searchFields;
