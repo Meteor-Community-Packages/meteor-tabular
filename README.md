@@ -171,6 +171,8 @@ TabularTables.People = new Tabular.Table({
 });
 ```
 
+Tabular row template data does not contain these extra fields. But, as you subscribed to it you can get these with a youCollection.find(...) as usual.
+
 ## Security
 
 You can optionally provide an `allow` and/or `allowFields` function to control which clients can get the published data. These are used by the built-in publications on the server only.
