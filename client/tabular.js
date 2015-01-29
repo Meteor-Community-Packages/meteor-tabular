@@ -20,7 +20,7 @@ Template.tabular.rendered = function () {
   template.tabular.limit = new ReactiveVar(10);
   template.tabular.sort = new ReactiveVar(null, Util.sortsAreEqual);
   template.tabular.columns = null;
-  template.tabular.fields = new ReactiveVar(null);
+  template.tabular.fields = null;
   template.tabular.searchFields = null;
   template.tabular.searchCaseInsensitive = true;
   template.tabular.tableName = new ReactiveVar(null);
@@ -80,6 +80,8 @@ Template.tabular.rendered = function () {
   var lastTableName;
   template.autorun(function () {
     var data = Template.currentData();
+
+    //console.log('currentData autorun');
 
     if (!data) {return;}
 
@@ -148,6 +150,8 @@ Template.tabular.rendered = function () {
       return;
     }
 
+    //console.log('tabular_getInfo autorun');
+
     Meteor.subscribe(
       "tabular_getInfo",
       template.tabular.tableName.get(),
@@ -170,6 +174,8 @@ Template.tabular.rendered = function () {
     var tableName = template.tabular.tableName.get();
     var tableInfo = Tabular.getRecord(tableName) || {};
 
+    //console.log('tableName and tableInfo autorun');
+
     template.tabular.recordsTotal = tableInfo.recordsTotal || 0;
     template.tabular.recordsFiltered = tableInfo.recordsFiltered || 0;
 
@@ -180,13 +186,11 @@ Template.tabular.rendered = function () {
       return;
     }
 
-    //console.log("tableInfo", tableInfo);
-
     template.tabular.tableDef.sub.subscribe(
       template.tabular.docPub.get(),
       tableName,
       tableInfo.ids || [],
-      template.tabular.fields.get()
+      template.tabular.fields
     );
   });
 
@@ -196,6 +200,8 @@ Template.tabular.rendered = function () {
   template.autorun(function (c) {
     var userOptions = template.tabular.options.get();
     var options = _.extend(ajaxOptions, userOptions);
+
+    //console.log('userOptions autorun');
 
     // unless the user provides her own displayStart,
     // we use a value from Session. This keeps the
@@ -249,7 +255,7 @@ Template.tabular.rendered = function () {
     // that were used in generating the list of `_id`s
     // on the server.
     var findOptions = {};
-    var fields = template.tabular.fields.get();
+    var fields = template.tabular.fields;
     if (fields) {
       // Extend with extraFields from table definition
       if (typeof template.tabular.tableDef.extraFields === 'object') {
@@ -258,13 +264,19 @@ Template.tabular.rendered = function () {
       findOptions.fields = fields;
     }
 
-    var sort = template.tabular.sort.get();
+    // Sort does not need to be reactive here; using
+    // reactive sort would result in extra rerunning.
+    var sort = Tracker.nonreactive(function () {
+      return template.tabular.sort.get();
+    });
     if (sort) {
       findOptions.sort = sort;
     }
 
     // Get the updated list of docs we should be showing
     var cursor = collection.find({_id: {$in: tableInfo.ids}}, findOptions);
+
+    //console.log('tableInfo, fields, sort, find autorun', cursor.count());
 
     // We're subscribing to the docs just in time, so there's
     // a good chance that they aren't all sent to the client yet.
