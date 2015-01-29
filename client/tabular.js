@@ -251,6 +251,10 @@ Template.tabular.rendered = function () {
     var findOptions = {};
     var fields = template.tabular.fields.get();
     if (fields) {
+      // Extend with extraFields from table definition
+      if (typeof template.tabular.tableDef.extraFields === 'object') {
+        _.extend(fields, template.tabular.tableDef.extraFields);
+      }
       findOptions.fields = fields;
     }
 
