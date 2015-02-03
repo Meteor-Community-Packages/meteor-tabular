@@ -212,6 +212,12 @@ Template.tabular.rendered = function () {
       });
     }
 
+    if (options.columns &&
+        options.columns[0].orderable === false &&
+        !('order' in options)) {
+      options.order = [];
+    }
+
     // After the first time, we need to destroy before rebuilding.
     if (table) {
       var dt = $tableElement.DataTable();
