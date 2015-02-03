@@ -49,7 +49,7 @@ tableInit = function tableInit(tabularTable, template) {
       // include it. Prevent sorting and searching because
       // our pub function won't be able to do it.
       if (dataProp.indexOf("()") !== -1) {
-        col.sortable = false;
+        col.orderable = false;
         col.searchable = false;
         return;
       }
