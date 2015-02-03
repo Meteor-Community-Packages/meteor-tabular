@@ -65,13 +65,21 @@ tableInit = function tableInit(tabularTable, template) {
     }
 
     // If we're displaying a template for this field,
-    // don't pass the data prop along to DataTables.
-    // This prevents both the data and the template
-    // from displaying in the same cell. We wait until
-    // now to do this to be sure that we still include
-    // the data prop in the list of fields.
-    if (tmpl) {
-      col.data = null;
+    // and we've also provided data, we want to
+    // pass the data prop along to DataTables
+    // to enable sorting and filtering.
+    // However, DataTables will then add that data to
+    // the displayed cell, which we don't want since
+    // we're rendering a template there with Blaze.
+    // We can prevent this issue by having the "render"
+    // function return an empty string for display content.
+    if (tmpl && "data" in col && !("render" in col)) {
+      col.render = function (data, type) {
+        if (type === 'display') {
+          return '';
+        }
+        return data;
+      };
     }
   });
 
