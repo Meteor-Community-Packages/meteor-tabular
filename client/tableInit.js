@@ -16,11 +16,23 @@ tableInit = function tableInit(tabularTable, template) {
     // and then remove it.
     var tmpl = col.tmpl;
     if (tmpl) {
+      // Cell should be initially blank
       col.defaultContent = "";
-      col.orderable = false;
+
+      // If there's also data attached, then we can still
+      // sort on this column. If not, then we shouldn't try.
+      if (!("data" in col)) {
+        col.orderable = false;
+      }
+
+      // When the cell is created, render it's content from
+      // the provided template with row data.
       col.createdCell = function (cell, cellData, rowData) {
         Blaze.renderWithData(tmpl, rowData, cell);
       };
+
+      // Then delete the `tmpl` property since DataTables
+      // doesn't need it.
       delete col.tmpl;
     }
 
