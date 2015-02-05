@@ -85,6 +85,14 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
 
   selector = selector || {};
 
+  // Apply the server side selector specified in the tabular
+  // table constructor. The selector specified in the constructor
+  // will overwrite and properties of the same name specified in the
+  // template.
+  if (typeof table.selector === 'function') {
+    _.extend(selector, table.selector(self.userId));
+  }
+
   var findOptions = {
     skip: skip,
     limit: limit,

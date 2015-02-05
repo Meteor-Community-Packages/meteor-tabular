@@ -79,6 +79,17 @@ Template.myTemplate.helpers({
 });
 ```
 
+If you want to limit what is published to the client for security reasons you can provide a selector in the constructor which will be used by the publications. Selectors provided this way will be merged with selectors provided to the template overwriting them if there are any conflicts.
+
+```js
+TabularTables.Books = new Tabular.Table({
+  // other properties...
+  selector: function( userId ) {
+    return { documentOwner: userId }
+  }
+});
+```
+
 ## Passing Options to the DataTable
 
 The [DataTables documentation](http://datatables.net/reference/option/) lists a huge variety of available table options and callbacks. You may add any of these to your `Tabular.Table` constructor options and they will be used as options when constructing the DataTable.
