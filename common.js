@@ -39,11 +39,13 @@ Tabular.Table = function (options) {
     self.extraFields = fields;
   }
 
+  self.selector = options.selector;
+
   if (!options.columns) {
     throw new Error('Tabular.Table options must specify columns');
   }
 
-  self.options = _.omit(options, 'collection', 'pub', 'sub', 'onUnload', 'allow', 'allowFields', 'extraFields', 'name');
+  self.options = _.omit(options, 'collection', 'pub', 'sub', 'onUnload', 'allow', 'allowFields', 'extraFields', 'name', 'selector');
 
   tablesByName[self.name] = self;
 };
