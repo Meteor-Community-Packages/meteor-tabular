@@ -65,8 +65,6 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
     throw new Error('No TabularTable defined with the name "' + tableName + '". Make sure you are defining your TabularTable in common code.');
   }
 
-  selector = selector || {};
-
   // Verify that limit is not 0, because that will actually
   // publish all document _ids.
   if (limit === 0) {
@@ -86,11 +84,16 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
   selector = selector || {};
 
   // Apply the server side selector specified in the tabular
-  // table constructor. The selector specified in the constructor
-  // will overwrite and properties of the same name specified in the
-  // template.
+  // table constructor. Both must be met, so we join
+  // them using $and, allowing both selectors to have
+  // the same keys.
   if (typeof table.selector === 'function') {
-    _.extend(selector, table.selector(self.userId));
+    var tableSelector = table.selector(self.userId);
+    if (_.isEmpty(selector)) {
+      selector = tableSelector;
+    } else {
+      selector = {$and: [tableSelector, selector]};
+    }
   }
 
   var findOptions = {
