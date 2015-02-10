@@ -79,7 +79,7 @@ Template.myTemplate.helpers({
 });
 ```
 
-If you want to limit what is published to the client for security reasons you can provide a selector in the constructor which will be used by the publications. Selectors provided this way will be merged with selectors provided to the template overwriting them if there are any conflicts.
+If you want to limit what is published to the client for security reasons you can provide a selector in the constructor which will be used by the publications. Selectors provided this way will be combined with selectors provided to the template using an AND relationship. Both selectors may query on the same fields if necessary.
 
 ```js
 TabularTables.Books = new Tabular.Table({
