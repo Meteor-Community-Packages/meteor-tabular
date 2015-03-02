@@ -316,7 +316,7 @@ Some useful tips
 
 ```js
 Template.myTemplate.events({
-  'click tbody tr': function (event) {
+  'click tbody > tr': function (event) {
     var dataTable = $(event.target).closest('table').DataTable();
     var rowData = dataTable.row(event.currentTarget).data();
   }
