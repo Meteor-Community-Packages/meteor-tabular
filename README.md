@@ -322,3 +322,22 @@ Template.myTemplate.events({
   }
 });
 ```
+
+## Integrating DataTables Extensions
+
+There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables.
+
+To integrate them into Tabular, just [download the JS and CSS files](http://datatables.net/download/index) for the extension.
+
+Feel free to pick up the debug versions since Meteor should automatically minify them for you.
+
+Next, add the JS and CSS files into the `client/compatibility` directory under your project root.
+You can read more about this special folder at http://docs.meteor.com/#/full/structuringyourapp
+
+If you're using the TableTools extension, there is a SWF file that needs to be added as well; it comes with the .zip file or you can directly get the latest version at https://github.com/DataTables/TableTools/tree/master/swf
+
+By default, DataTables looks for the SWF file at `http://yoursite.com/swf/copy_csv_xls.swf`. As a result, create a directory `public/swf` in your Meteor project root and add the `copy_csv_xls.swf` or `copy_csv_xls_pdf.swf` file into that directory.
+
+Then, enable the TableTools extension via the [dom property](http://datatables.net/extensions/tabletools/initialisation) in the DataTable options; you can do this directly in the [Tabular initialization code](#passing-options-to-the-datatable) so you don't need to write any jQuery. You should then be able to see the Flash buttons.
+
+Keep in mind that this extension only works on table rows that the user has selected, so if the buttons aren't doing anything, you will first want to select some rows.
