@@ -4,7 +4,7 @@ Template.tabular.helpers({
   atts: function () {
     // We remove the "table" and "selector" attributes and assume the rest belong
     // on the <table> element
-    return _.omit(this, "table", "selector");
+    return _.omit(this, "table", "selector", "limit");
   }
 });
 
@@ -49,7 +49,7 @@ Template.tabular.rendered = function () {
       template.tabular.skip.set(data.start);
       Session.set('Tabular.LastSkip', data.start);
       // Update limit
-      template.tabular.limit.set(data.length);
+      template.tabular.limit.set(Template.currentData().limit || data.length);
       // Update sort
       template.tabular.sort.set(Util.getMongoSort(data.order, template.tabular.columns));
       // Update pubSelector
