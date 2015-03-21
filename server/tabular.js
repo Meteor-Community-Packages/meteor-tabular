@@ -113,7 +113,7 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
     return doc._id;
   });
 
-  var countCursor = table.collection.find({}, {fields: {_id: 1}});
+  var countCursor = table.collection.find(selector, {fields: {_id: 1}});
 
   var recordReady = false;
   function updateRecords() {
