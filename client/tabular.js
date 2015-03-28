@@ -20,7 +20,7 @@ Template.tabular.rendered = function () {
   template.tabular.limit = new ReactiveVar(10);
   template.tabular.sort = new ReactiveVar(null, Util.sortsAreEqual);
   template.tabular.columns = null;
-  template.tabular.fields = null;
+  template.tabular.fields = new ReactiveVar(null);
   template.tabular.searchFields = null;
   template.tabular.searchCaseInsensitive = true;
   template.tabular.tableName = new ReactiveVar(null);
@@ -33,47 +33,7 @@ Template.tabular.rendered = function () {
 
   // These are some DataTables options that we need for everything to work.
   // We add them to the options specified by the user.
-  var ajaxOptions = {
-    // tell DataTables that we're getting the table data from a server
-    serverSide: true,
-    // define the function that DataTables will call upon first load and whenever
-    // we tell it to reload data, such as when paging, etc.
-    ajax: function (data, callback/*, settings*/) {
-      // When DataTables requests data, first we set
-      // the new skip, limit, order, and pubSelector values
-      // that DataTables has requested. These trigger
-      // the first subscription, which will then trigger the
-      // second subscription.
-
-      // Update skip
-      template.tabular.skip.set(data.start);
-      Session.set('Tabular.LastSkip', data.start);
-      // Update limit
-      template.tabular.limit.set(data.length);
-      // Update sort
-      template.tabular.sort.set(Util.getMongoSort(data.order, template.tabular.columns));
-      // Update pubSelector
-      var pubSelector = getPubSelector(
-        template.tabular.selector,
-        (data.search && data.search.value) || null,
-        template.tabular.searchFields,
-        template.tabular.searchCaseInsensitive
-      );
-      template.tabular.pubSelector.set(pubSelector);
-
-      // We're ready to subscribe to the data.
-      // Matters on the first run only.
-      template.tabular.ready.set(true);
-
-      callback({
-        draw: data.draw,
-        recordsTotal: template.tabular.recordsTotal,
-        recordsFiltered: template.tabular.recordsFiltered,
-        data: template.tabular.data
-      });
-
-    }
-  };
+  var ajaxOptions = resetAjaxOptions(template.tabular);
 
   // Reactively determine table columns, fields, and searchFields.
   // This will rerun whenever the current template data changes.
@@ -100,14 +60,14 @@ Template.tabular.rendered = function () {
     // attribute. If we didn't change it, we can stop here,
     // but we need to reload the table if this is not the first
     // run
-    if (tabularTable.name === lastTableName) {
+    /*if (tabularTable.name === lastTableName) {
       if (table) {
         // passing `false` as the second arg tells it to
         // reset the paging
         table.ajax.reload(null, true);
       }
       return;
-    }
+   }*/
 
     // If we reactively changed the `table` attribute, run
     // onUnload for the previous table
@@ -174,6 +134,9 @@ Template.tabular.rendered = function () {
     var tableName = template.tabular.tableName.get();
     var tableInfo = Tabular.getRecord(tableName) || {};
 
+    // we also trigger a rerun below based on tabular.fields
+    //    changing
+
     //console.log('tableName and tableInfo autorun');
 
     template.tabular.recordsTotal = tableInfo.recordsTotal || 0;
@@ -190,7 +153,7 @@ Template.tabular.rendered = function () {
       template.tabular.docPub.get(),
       tableName,
       tableInfo.ids || [],
-      template.tabular.fields
+      template.tabular.fields.get()
     );
   });
 
@@ -199,7 +162,7 @@ Template.tabular.rendered = function () {
   // only when the `table` attribute changes reactively.
   template.autorun(function (c) {
     var userOptions = template.tabular.options.get();
-    var options = _.extend(ajaxOptions, userOptions);
+    var options = _.extend(resetAjaxOptions(template.tabular), userOptions);
 
     //console.log('userOptions autorun');
 
@@ -261,7 +224,12 @@ Template.tabular.rendered = function () {
     // that were used in generating the list of `_id`s
     // on the server.
     var findOptions = {};
-    var fields = template.tabular.fields;
+
+    // Get the fields that we're showing in the table non-reactively
+    var fields= Tracker.nonreactive(function () {
+      return template.tabular.fields.get();
+    });
+
     if (fields) {
       // Extend with extraFields from table definition
       if (typeof template.tabular.tableDef.extraFields === 'object') {
@@ -328,4 +296,51 @@ Template.tabular.destroyed = function () {
       typeof this.tabular.tableDef.onUnload === 'function') {
     this.tabular.tableDef.onUnload();
   }
+};
+
+// pulled this out because we need to regenerate it each time
+//    we regenerate options because the ajaxOptions are modified
+//    by DataTables (for example, adding aoColumns)
+resetAjaxOptions = function(tabular) {
+   return  {
+     // tell DataTables that we're getting the table data from a server
+     serverSide: true,
+     // define the function that DataTables will call upon first load and whenever
+     // we tell it to reload data, such as when paging, etc.
+     ajax: function (data, callback/*, settings*/) {
+      // When DataTables requests data, first we set
+      // the new skip, limit, order, and pubSelector values
+      // that DataTables has requested. These trigger
+      // the first subscription, which will then trigger the
+      // second subscription.
+
+      // Update skip
+      tabular.skip.set(data.start);
+      Session.set('Tabular.LastSkip', data.start);
+      // Update limit
+      tabular.limit.set(data.length);
+      // Update sort
+      tabular.sort.set(Util.getMongoSort(data.order, tabular.columns));
+      // Update pubSelector
+      var pubSelector = getPubSelector(
+         tabular.selector,
+         (data.search && data.search.value) || null,
+         tabular.searchFields,
+         tabular.searchCaseInsensitive
+      );
+      tabular.pubSelector.set(pubSelector);
+
+      // We're ready to subscribe to the data.
+      // Matters on the first run only.
+      tabular.ready.set(true);
+
+      callback({
+         draw: data.draw,
+         recordsTotal: tabular.recordsTotal,
+         recordsFiltered: tabular.recordsFiltered,
+         data: tabular.data
+      });
+
+     }
+   };
 };
