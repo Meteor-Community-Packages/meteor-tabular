@@ -186,6 +186,7 @@ Template.tabular.rendered = function () {
       var dt = $tableElement.DataTable();
       if (dt) {
         dt.destroy();
+        $tableElement.empty();     // DataTables needs this in case # of clumns changes
       }
     }
 
