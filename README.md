@@ -182,6 +182,22 @@ TabularTables.People = new Tabular.Table({
 });
 ```
 
+
+## Modifying the selector
+
+If your table requires the selector to be modified before it's published, you can modify it with the `modifySelector` method. This can be useful for modifying what will be returned in a search.
+
+```js
+TabularTables.Posts = new Tabular.Table({
+  // other properties...
+  modifySelector: function(selector) {
+    // modify it here ...
+    return selector;
+  }
+});
+```
+
+
 ## Security
 
 You can optionally provide an `allow` and/or `allowFields` function to control which clients can get the published data. These are used by the built-in publications on the server only.
