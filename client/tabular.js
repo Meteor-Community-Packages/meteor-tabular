@@ -185,13 +185,25 @@ Template.tabular.rendered = function () {
         template.tabular.recordsFiltered === 0) {
       return;
     }
-
-    template.tabular.tableDef.sub.subscribe(
-      template.tabular.docPub.get(),
-      tableName,
-      tableInfo.ids || [],
-      template.tabular.fields
-    );
+    
+    var docPub = template.tabular.docPub.get();
+    
+    if(_.isString(docPub)) {
+      template.tabular.tableDef.sub.subscribe(
+        docPub,
+        tableName,
+        tableInfo.ids || [],
+        template.tabular.fields
+      );
+    }
+    else if(_.isFunction(docPub)) {
+      docPub(
+        template.tabular.tableDef.sub,
+        tableName,
+        tableInfo.ids || [],
+        template.tabular.fields
+      );
+    }
   });
 
   // Build the table. We rerun this only when the table
