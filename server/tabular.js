@@ -83,6 +83,11 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
 
   selector = selector || {};
 
+  // Allow the user to modify the selector before we use it
+  if (typeof table.changeSelector === 'function') {
+    selector = table.changeSelector(selector);
+  }
+
   // Apply the server side selector specified in the tabular
   // table constructor. Both must be met, so we join
   // them using $and, allowing both selectors to have
