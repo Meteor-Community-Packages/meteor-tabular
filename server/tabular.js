@@ -85,7 +85,7 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
 
   // Allow the user to modify the selector before we use it
   if (typeof table.changeSelector === 'function') {
-    selector = table.changeSelector(selector);
+    selector = table.changeSelector(selector, self.userId);
   }
 
   // Apply the server side selector specified in the tabular
