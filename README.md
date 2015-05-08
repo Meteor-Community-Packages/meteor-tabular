@@ -339,6 +339,10 @@ Template.myTemplate.events({
 });
 ```
 
+### Adjust column widths
+
+By default, the DataTables library uses automatic column width calculations. If this makes some of your columns look squished, try setting the `autoWidth: false` option.
+
 ## Integrating DataTables Extensions
 
 There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables.
