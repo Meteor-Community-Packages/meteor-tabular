@@ -24,6 +24,8 @@ $ meteor add aldeed:tabular
 
 ## Example
 
+View a [demonstration project on Meteorpad](http://meteorpad.com/pad/xNafF9N5XJNrFJEyG/TabularDemo).
+
 Define your table in common code:
 
 ```js
