@@ -57,7 +57,8 @@ Template.tabular.rendered = function () {
         template.tabular.selector,
         (data.search && data.search.value) || null,
         template.tabular.searchFields,
-        template.tabular.searchCaseInsensitive
+        template.tabular.searchCaseInsensitive,
+        data.columns || null
       );
       template.tabular.pubSelector.set(pubSelector);
 
