@@ -167,12 +167,12 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
   // This allows us to get total count available.
   var initializing2 = true;
   var handle2 = countCursor.observeChanges({
-    added: function () {
+    added: _.debounce(function () {
       if (initializing2) {
         return;
       }
       updateRecords();
-    },
+    }, 250, true),
     removed: function () {
       updateRecords();
     }
