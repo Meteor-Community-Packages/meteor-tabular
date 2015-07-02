@@ -1,7 +1,8 @@
 /* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, tablesByName, tableInit, getPubSelector, Util */
 
 Template.tabular.created = function() {
-  this.tabular = {};
+  this.isLoading = true;
+  this.isLoadingDep = new Tracker.Dependency();
 }
 
 Template.tabular.helpers({
@@ -11,11 +12,8 @@ Template.tabular.helpers({
     return _.omit(this, "table", "selector");
   },
   isLoading: function() {
-    // TODO: update this function to return true while data is updating
-    // (e.g. while data is being sorted)
-    return (this.table.collection.find().count() == 0 &&
-      (_.isEmpty(Template.instance().tabular) ||
-      Template.instance().tabular.recordsTotal > 0));
+    Template.instance().isLoadingDep.depend();
+    return Template.instance().isLoading;
   }
 });
 
@@ -24,7 +22,7 @@ Template.tabular.rendered = function () {
       table, resetTablePaging = false,
       $tableElement = template.$('table');
 
-  //template.tabular = {};
+  template.tabular = {};
   template.tabular.data = [];
   template.tabular.pubSelector = new ReactiveVar({});
   template.tabular.skip = new ReactiveVar(0);
@@ -56,6 +54,10 @@ Template.tabular.rendered = function () {
       // the first subscription, which will then trigger the
       // second subscription.
 
+      // Set isLoading to true to show loading indicator
+      template.isLoading = true;
+      template.isLoadingDep.changed();
+
       // Update skip
       template.tabular.skip.set(data.start);
       Session.set('Tabular.LastSkip', data.start);
@@ -82,7 +84,6 @@ Template.tabular.rendered = function () {
         recordsFiltered: template.tabular.recordsFiltered,
         data: template.tabular.data
       });
-
     }
   };
 
@@ -160,7 +161,6 @@ Template.tabular.rendered = function () {
     if (!template.tabular.ready.get()) {
       return;
     }
-
     //console.log('tabular_getInfo autorun');
 
     Meteor.subscribe(
@@ -268,7 +268,6 @@ Template.tabular.rendered = function () {
     if (!collection || !tableInfo) {
       return;
     }
-
     // Build options object to pass to `find`.
     // It's important that we use the same options
     // that were used in generating the list of `_id`s
@@ -324,6 +323,9 @@ Template.tabular.rendered = function () {
       }
     }
 
+    // Set isLoading to false so loading indicator is not shown
+    template.isLoading = false;
+    template.isLoadingDep.changed();
   });
 
   // force table paging to reset to first page when we change page length
