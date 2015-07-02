@@ -5,6 +5,9 @@ Template.tabular.helpers({
     // We remove the "table" and "selector" attributes and assume the rest belong
     // on the <table> element
     return _.omit(this, "table", "selector");
+  },
+  hasElements: function() {
+    return Template.currentData().table.collection.find().count() > 0;
   }
 });
 
