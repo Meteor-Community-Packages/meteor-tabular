@@ -1,13 +1,21 @@
 /* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, tablesByName, tableInit, getPubSelector, Util */
 
+Template.tabular.created = function() {
+  this.tabular = {};
+}
+
 Template.tabular.helpers({
   atts: function () {
     // We remove the "table" and "selector" attributes and assume the rest belong
     // on the <table> element
     return _.omit(this, "table", "selector");
   },
-  hasElements: function() {
-    return Template.currentData().table.collection.find().count() > 0;
+  isLoading: function() {
+    // TODO: update this function to return true while data is updating
+    // (e.g. while data is being sorted)
+    return (this.table.collection.find().count() == 0 &&
+      (_.isEmpty(Template.instance().tabular) ||
+      Template.instance().tabular.recordsTotal > 0));
   }
 });
 
@@ -16,7 +24,7 @@ Template.tabular.rendered = function () {
       table, resetTablePaging = false,
       $tableElement = template.$('table');
 
-  template.tabular = {};
+  //template.tabular = {};
   template.tabular.data = [];
   template.tabular.pubSelector = new ReactiveVar({});
   template.tabular.skip = new ReactiveVar(0);
