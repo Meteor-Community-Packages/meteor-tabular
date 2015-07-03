@@ -1,6 +1,20 @@
 <template name="tabular">
-  <div>
-    {{! somehow the div wrapper helps the table get cleaned up properly for example when switching between routes}}
-    <table {{atts}}></table>
-  </div>
+	<div>
+		{{! somehow the div wrapper helps the table get cleaned up properly for example when switching between routes}}
+	    <table {{atts}}>
+			{{#if isLoading}}
+				{{> loading_table}}
+			{{/if}}
+	    </table>
+	</div>
+</template>
+
+<template name="loading_table">
+	<td id="spinner-container" align="center" style="width:100%;" colspan="100">
+		<div class="spinner" style="margin:50px auto;">
+			<div class="bounce1"></div>
+			<div class="bounce2"></div>
+			<div class="bounce3"></div>
+		</div>
+	</td>
 </template>
