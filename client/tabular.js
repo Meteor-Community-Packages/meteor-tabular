@@ -212,11 +212,13 @@ Template.tabular.rendered = function () {
       });
     }
 
-    if (options.columns &&
+        /*if (options.columns &&
         options.columns[0].orderable === false &&
         !('order' in options)) {
       options.order = [];
-    }
+    }*/
+    // Sets the default sort as none so initial load time is quicker for large datasets
+    options.order = []
 
     // After the first time, we need to destroy before rebuilding.
     if (table) {
