@@ -12,8 +12,20 @@ Template.tabular.helpers({
     return _.omit(this, "table", "selector");
   },
   isLoading: function() {
-    Template.instance().isLoadingDep.depend();
-    return Template.instance().isLoading;
+    var template = Template.instance();
+
+    // Need to call depend() so this updates when isLoading is changed
+    template.isLoadingDep.depend();
+    var loading = Template.instance().isLoading;
+
+    // Hide table body when showing loading indicator
+    if (loading && template.tabular) {
+      template.$("tbody").css({display: "none"});
+    } else if (template.tabular) {
+      template.$("tbody").css({display: "table-row-group"});
+    }
+
+    return loading;
   }
 });
 
