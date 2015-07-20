@@ -22,6 +22,10 @@ Although this appears similar to the [jquery-datatables](https://github.com/Luma
 $ meteor add aldeed:tabular
 ```
 
+## Online Demo App
+
+View a [demonstration project on Meteorpad](http://meteorpad.com/pad/xNafF9N5XJNrFJEyG/TabularDemo).
+
 ## Example
 
 Define your table in common code:
