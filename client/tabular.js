@@ -8,14 +8,14 @@ Template.tabular.helpers({
   }
 });
 
-Template.tabular.rendered = function () {
+var tabularOnRendered = function () {
   var template = this,
       table, resetTablePaging = false,
       $tableElement = template.$('table');
 
   template.tabular = {};
   template.tabular.data = [];
-  template.tabular.pubSelector = new ReactiveVar({});
+  template.tabular.pubSelector = new ReactiveVar({}, Util.objectsAreEqual);
   template.tabular.skip = new ReactiveVar(0);
   template.tabular.limit = new ReactiveVar(10);
   template.tabular.sort = new ReactiveVar(null, Util.sortsAreEqual);
@@ -24,12 +24,13 @@ Template.tabular.rendered = function () {
   template.tabular.searchFields = null;
   template.tabular.searchCaseInsensitive = true;
   template.tabular.tableName = new ReactiveVar(null);
-  template.tabular.options = new ReactiveVar({});
+  template.tabular.options = new ReactiveVar({}, Util.objectsAreEqual);
   template.tabular.docPub = new ReactiveVar(null);
   template.tabular.collection = new ReactiveVar(null);
   template.tabular.ready = new ReactiveVar(false);
   template.tabular.recordsTotal = 0;
   template.tabular.recordsFiltered = 0;
+  template.tabular.isLoading = new ReactiveVar(true);
 
   // These are some DataTables options that we need for everything to work.
   // We add them to the options specified by the user.
@@ -45,11 +46,27 @@ Template.tabular.rendered = function () {
       // the first subscription, which will then trigger the
       // second subscription.
 
+      template.tabular.isLoading.set(true);
+      //console.log('data', template.tabular.data);
+
       // Update skip
       template.tabular.skip.set(data.start);
       Session.set('Tabular.LastSkip', data.start);
+
       // Update limit
-      template.tabular.limit.set(data.length);
+      var options = template.tabular.options.get();
+      var hardLimit = options && options.limit;
+      if (data.length === -1) {
+        if (hardLimit === undefined) {
+          console.warn('When using no paging or an "All" option with tabular, it is best to also add a hard limit in your table options like {limit: 500}');
+          template.tabular.limit.set(null);
+        } else {
+          template.tabular.limit.set(hardLimit);
+        }
+      } else {
+        template.tabular.limit.set(data.length);
+      }
+
       // Update sort
       template.tabular.sort.set(Util.getMongoSort(data.order, template.tabular.columns));
       // Update pubSelector
@@ -57,13 +74,16 @@ Template.tabular.rendered = function () {
         template.tabular.selector,
         (data.search && data.search.value) || null,
         template.tabular.searchFields,
-        template.tabular.searchCaseInsensitive
+        template.tabular.searchCaseInsensitive,
+        data.columns || null
       );
       template.tabular.pubSelector.set(pubSelector);
 
       // We're ready to subscribe to the data.
       // Matters on the first run only.
       template.tabular.ready.set(true);
+
+      //console.log('ajax');
 
       callback({
         draw: data.draw,
@@ -75,13 +95,16 @@ Template.tabular.rendered = function () {
     }
   };
 
+  // For testing
+  //setUpTestingAutoRunLogging(template);
+
   // Reactively determine table columns, fields, and searchFields.
   // This will rerun whenever the current template data changes.
   var lastTableName;
   template.autorun(function () {
     var data = Template.currentData();
 
-    //console.log('currentData autorun');
+    //console.log('currentData autorun', data);
 
     if (!data) {return;}
 
@@ -131,6 +154,7 @@ Template.tabular.rendered = function () {
     template.tabular.docPub.set(tabularTable.pub);
     template.tabular.collection.set(tabularTable.collection);
 
+    // userOptions rerun should do this?
     if (table) {
       // passing `true` as the second arg tells it to
       // reset the paging
@@ -174,7 +198,7 @@ Template.tabular.rendered = function () {
     var tableName = template.tabular.tableName.get();
     var tableInfo = Tabular.getRecord(tableName) || {};
 
-    //console.log('tableName and tableInfo autorun');
+    //console.log('tableName and tableInfo autorun', tableName, tableInfo);
 
     template.tabular.recordsTotal = tableInfo.recordsTotal || 0;
     template.tabular.recordsFiltered = tableInfo.recordsFiltered || 0;
@@ -199,9 +223,9 @@ Template.tabular.rendered = function () {
   // only when the `table` attribute changes reactively.
   template.autorun(function (c) {
     var userOptions = template.tabular.options.get();
-    var options = _.extend(ajaxOptions, userOptions);
+    var options = _.extend({}, ajaxOptions, userOptions);
 
-    //console.log('userOptions autorun');
+    //console.log('userOptions autorun', options);
 
     // unless the user provides her own displayStart,
     // we use a value from Session. This keeps the
@@ -212,9 +236,7 @@ Template.tabular.rendered = function () {
       });
     }
 
-    if (options.columns &&
-        options.columns[0].orderable === false &&
-        !('order' in options)) {
+    if (!('order' in options)) {
       options.order = [];
     }
 
@@ -223,6 +245,7 @@ Template.tabular.rendered = function () {
       var dt = $tableElement.DataTable();
       if (dt) {
         dt.destroy();
+        $tableElement.empty();
       }
     }
 
@@ -298,6 +321,8 @@ Template.tabular.rendered = function () {
     // Get data as array for DataTables to consume in the ajax function
     template.tabular.data = cursor.fetch();
 
+    template.tabular.isLoading.set(false);
+
     // For these types of reactive changes, we don't want to
     // reset the page we're on, so we pass `false` as second arg.
     // The exception is if we changed the results-per-page number,
@@ -313,13 +338,25 @@ Template.tabular.rendered = function () {
 
   });
 
+  // XXX Not working
+  template.autorun(function () {
+    var visibility = template.tabular.isLoading.get() ? 'visible' : 'hidden';
+    template.$('.dataTables_processing').css('visibility', visibility);
+  });
+
   // force table paging to reset to first page when we change page length
   $tableElement.on('length.dt', function () {
     resetTablePaging = true;
   });
 };
 
-Template.tabular.destroyed = function () {
+if (typeof Template.tabular.onRendered === 'function') {
+  Template.tabular.onRendered(tabularOnRendered);
+} else {
+  Template.tabular.rendered = tabularOnRendered;
+}
+
+var tabularOnDestroyed = function () {
   // Clear last skip tracking
   Session.set('Tabular.LastSkip', 0);
   // Run a user-provided onUnload function
@@ -329,3 +366,36 @@ Template.tabular.destroyed = function () {
     this.tabular.tableDef.onUnload();
   }
 };
+
+if (typeof Template.tabular.onDestroyed === 'function') {
+  Template.tabular.onDestroyed(tabularOnDestroyed);
+} else {
+  Template.tabular.destroyed = tabularOnDestroyed;
+}
+
+function setUpTestingAutoRunLogging(template) {
+  template.autorun(function () {
+    var val = template.tabular.tableName.get();
+    console.log('tableName changed', val);
+  });
+
+  template.autorun(function () {
+    var val = template.tabular.pubSelector.get();
+    console.log('pubSelector changed', val);
+  });
+
+  template.autorun(function () {
+    var val = template.tabular.sort.get();
+    console.log('sort changed', val);
+  });
+
+  template.autorun(function () {
+    var val = template.tabular.skip.get();
+    console.log('skip changed', val);
+  });
+
+  template.autorun(function () {
+    var val = template.tabular.limit.get();
+    console.log('limit changed', val);
+  });
+}

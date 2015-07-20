@@ -36,6 +36,13 @@ Util.sortsAreEqual = function sortsAreEqual(oldVal, newVal) {
   return areSame;
 };
 
+Util.objectsAreEqual = function objectsAreEqual(oldVal, newVal) {
+  if (oldVal === newVal) {
+    return true;
+  }
+  return JSON.stringify(oldVal) === JSON.stringify(newVal);
+};
+
 // Take the DataTables `order` format and column info
 // and convert it into a mongo sort array.
 Util.getMongoSort = function getMongoSort(order, columns) {
