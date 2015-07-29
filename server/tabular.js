@@ -51,7 +51,7 @@ Meteor.publish("tabular_genericPub", function (tableName, ids, fields) {
   return table.collection.find({_id: {$in: ids}}, {fields: fields});
 });
 
-Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limit) {
+Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limit, throttleRefresh) {
   var self = this;
 
   check(tableName, String);
@@ -59,6 +59,7 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
   check(sort, Match.Optional(Match.OneOf(Array, null)));
   check(skip, Number);
   check(limit, Match.Optional(Match.OneOf(Number, null)));
+  check(throttleRefresh, Match.Optional(Match.OneOf(Number, null)));
 
   var table = tablesByName[tableName];
   if (!table) {
@@ -112,15 +113,31 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
 
   var filteredCursor = table.collection.find(selector, findOptions);
 
-  var filteredRecordIds = filteredCursor.map(function (doc) {
-    return doc._id;
-  });
+  // var filteredRecordIds = filteredCursor.map(function (doc) {
+  //   return doc._id;
+  // });
 
   var countCursor = table.collection.find(selector, {fields: {_id: 1}});
 
   var recordReady = false;
+  var lastUpdatedRecords = 0;
   function updateRecords() {
+    var currTime = new Date().getTime();
+    if (throttleRefresh && currTime - lastUpdatedRecords < throttleRefresh) {
+      return;
+    }
+    else {
+      lastUpdatedRecords = currTime;
+    }
+
     var currentCount = countCursor.count();
+
+    // recalculate filtered records from scratch
+    // because we may have pushed/removed beyond the limit
+    // TODO: compare the length to the limit?
+    var filteredRecordIds = filteredCursor.map(function (doc) {
+      return doc._id;
+    });
 
     var record = {
       ids: filteredRecordIds,
@@ -130,6 +147,8 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
       recordsTotal: currentCount,
       recordsFiltered: currentCount
     };
+
+    // console.log("Pushing tabular_records", tableName, record);
 
     if (recordReady) {
       //console.log("changed", tableName, record);
@@ -149,13 +168,13 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
         return;
       }
 
-      //console.log("ADDED");
-      filteredRecordIds.push(id);
+      // console.log("ADDED");
+      // filteredRecordIds.push(id);
       updateRecords();
     },
     removed: function (id) {
-      //console.log("REMOVED");
-      filteredRecordIds = _.without(filteredRecordIds, id);
+      // console.log("REMOVED");
+      // filteredRecordIds = _.without(filteredRecordIds, id);
       updateRecords();
     }
   });
