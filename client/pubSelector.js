@@ -28,5 +28,5 @@ getPubSelector = function getPubSelector(selector, searchString, searchFields, s
       }
     });
 
-    return _.extend({}, selector, {$or: searches});
+    return { $and: [ selector, { $or: searches } ] };
   };
