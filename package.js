@@ -1,10 +1,14 @@
-/* global Package */
+/* global Package, Npm */
 
 Package.describe({
   name: 'aldeed:tabular',
   summary: 'Datatables for large or small datasets in Meteor',
   version: '1.2.0',
   git: 'https://github.com/aldeed/meteor-tabular.git'
+});
+
+Npm.depends({
+  datatables: '1.10.7'
 });
 
 Package.onUse(function(api) {
@@ -18,7 +22,7 @@ Package.onUse(function(api) {
   api.addFiles('common.js');
   api.addFiles('server/tabular.js', 'server');
   api.addFiles([
-    'client/lib/jquery.dataTables.min.js',
+    '.npm/package/node_modules/datatables/media/js/jquery.dataTables.js',
     'client/lib/dataTables.bootstrap.js',
     'client/lib/dataTables.bootstrap.css',
     'client/tabular.html',
