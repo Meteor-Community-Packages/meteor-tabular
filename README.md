@@ -347,6 +347,10 @@ Template.myTemplate.events({
 
 By default, the DataTables library uses automatic column width calculations. If this makes some of your columns look squished, try setting the `autoWidth: false` option.
 
+### Turning Off Paging or Showing "All"
+
+When using no paging or an "All" (-1) option in the page limit list, it is best to also add a hard limit in your table options like `limit: 500`, unless you know the collection will always be very small.
+
 ## Integrating DataTables Extensions
 
 There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables.
