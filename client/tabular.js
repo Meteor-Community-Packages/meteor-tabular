@@ -1,4 +1,4 @@
-/* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, tablesByName, tableInit, getPubSelector, Util */
+/* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, tableInit, getPubSelector, Util */
 
 Template.tabular.helpers({
   atts: function () {
@@ -135,7 +135,7 @@ var tabularOnRendered = function () {
     // If we reactively changed the `table` attribute, run
     // onUnload for the previous table
     if (lastTableName !== undefined) {
-      var lastTableDef = tablesByName[lastTableName];
+      var lastTableDef = Tabular.tablesByName[lastTableName];
       if (lastTableDef && typeof lastTableDef.onUnload === 'function') {
         lastTableDef.onUnload();
       }
@@ -373,29 +373,29 @@ if (typeof Template.tabular.onDestroyed === 'function') {
   Template.tabular.destroyed = tabularOnDestroyed;
 }
 
-function setUpTestingAutoRunLogging(template) {
-  template.autorun(function () {
-    var val = template.tabular.tableName.get();
-    console.log('tableName changed', val);
-  });
-
-  template.autorun(function () {
-    var val = template.tabular.pubSelector.get();
-    console.log('pubSelector changed', val);
-  });
-
-  template.autorun(function () {
-    var val = template.tabular.sort.get();
-    console.log('sort changed', val);
-  });
-
-  template.autorun(function () {
-    var val = template.tabular.skip.get();
-    console.log('skip changed', val);
-  });
-
-  template.autorun(function () {
-    var val = template.tabular.limit.get();
-    console.log('limit changed', val);
-  });
-}
+//function setUpTestingAutoRunLogging(template) {
+//  template.autorun(function () {
+//    var val = template.tabular.tableName.get();
+//    console.log('tableName changed', val);
+//  });
+//
+//  template.autorun(function () {
+//    var val = template.tabular.pubSelector.get();
+//    console.log('pubSelector changed', val);
+//  });
+//
+//  template.autorun(function () {
+//    var val = template.tabular.sort.get();
+//    console.log('sort changed', val);
+//  });
+//
+//  template.autorun(function () {
+//    var val = template.tabular.skip.get();
+//    console.log('skip changed', val);
+//  });
+//
+//  template.autorun(function () {
+//    var val = template.tabular.limit.get();
+//    console.log('limit changed', val);
+//  });
+//}

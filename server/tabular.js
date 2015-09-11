@@ -1,4 +1,4 @@
-/* global check, Match, Meteor, tablesByName, _ */
+/* global check, Match, Meteor, _, Tabular */
 
 /*
  * These are the two publications used by TabularTable.
@@ -24,7 +24,7 @@ Meteor.publish("tabular_genericPub", function (tableName, ids, fields) {
   check(ids, Array);
   check(fields, Match.Optional(Object));
 
-  var table = tablesByName[tableName];
+  var table = Tabular.tablesByName[tableName];
   if (!table) {
     // We throw an error in the other pub, so no need to throw one here
     self.ready();
@@ -60,7 +60,7 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
   check(skip, Number);
   check(limit, Match.Optional(Match.OneOf(Number, null)));
 
-  var table = tablesByName[tableName];
+  var table = Tabular.tablesByName[tableName];
   if (!table) {
     throw new Error('No TabularTable defined with the name "' + tableName + '". Make sure you are defining your TabularTable in common code.');
   }
