@@ -34,25 +34,31 @@ getPubSelector = function getPubSelector(selector, searchString, searchFields, s
   var searchTerms = _.isEmpty(searchColumns) ? searchFields : searchColumns;
 
   _.each(searchTerms, function(field) {
-    var m1 = {}, m2 = {};
+    var searchValue = field.search.value || '';
 
-    var numSearchString = Number(field.search.value);
+    // Split and OR by whitespace, as per default DataTables search behavior
+    searchValue = searchValue.match(/\S+/g);
 
-    // String search
-    m1[field.data] = { $regex: field.search.value };
+    _.each(searchValue, function (searchTerm) {
+      var m1 = {}, m2 = {};
 
-    // DataTables searches are case insensitive by default
-    if (searchCaseInsensitive !== false) {
-      m1[field.data].$options = "i";
-    }
+      // String search
+      m1[field.data] = { $regex: searchTerm };
 
-    searches.push(m1);
+      // DataTables searches are case insensitive by default
+      if (searchCaseInsensitive !== false) {
+        m1[field.data].$options = "i";
+      }
 
-    // Number search
-    if (!isNaN(numSearchString)) {
-      m2[field.data] = numSearchString;
-      searches.push(m2);
-    }
+      searches.push(m1);
+
+      // Number search
+      var numSearchString = Number(searchTerm);
+      if (!isNaN(numSearchString)) {
+        m2[field.data] = numSearchString;
+        searches.push(m2);
+      }
+    });
   });
 
   var result;
@@ -61,6 +67,8 @@ getPubSelector = function getPubSelector(selector, searchString, searchFields, s
   } else {
     result = {$or: searches};
   }
+
+  console.log(result);
 
   return result;
 };
