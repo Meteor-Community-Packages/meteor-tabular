@@ -33,10 +33,8 @@ Define your table in common code:
 ```js
 TabularTables = {};
 
-Meteor.isClient && Template.registerHelper('TabularTables', TabularTables);
-
 TabularTables.Books = new Tabular.Table({
-  name: "BookList",
+  name: "Books",
   collection: Books,
   columns: [
     {data: "title", title: "Title"},
@@ -66,6 +64,8 @@ And then reference in one of your templates where you want it to appear:
 ```html
 {{> tabular table=TabularTables.Books class="table table-striped table-bordered table-condensed"}}
 ```
+
+The `TabularTables.Books` helper is automatically added, where "Books" is the `name` option from your table constructor.
 
 ## Displaying Only Part of a Collection's Data Set
 

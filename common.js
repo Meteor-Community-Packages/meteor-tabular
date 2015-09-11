@@ -1,8 +1,12 @@
-/* global Tabular:true, Mongo, _, Meteor */
+/* global Tabular:true, Mongo, _, Meteor, Template */
 
 Tabular = {}; //exported
 
 Tabular.tablesByName = {};
+
+if (Meteor.isClient) {
+  Template.registerHelper('TabularTables', Tabular.tablesByName);
+}
 
 Tabular.Table = function (options) {
   var self = this;
