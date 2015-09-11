@@ -119,7 +119,23 @@ You might have noticed this column definition in the example:
 }
 ```
 
-This is not part of the DataTables API. It's a special feature of this package. By passing a Spacebars Template object, that template will be rendered in the table cell. You can include a button and/or use helpers and events. In your template and helpers, `this` is set to the document for the current row.
+This is not part of the DataTables API. It's a special feature of this package. By passing a Blaze Template object, that template will be rendered in the table cell. You can include a button and/or use helpers and events.
+
+In your template and helpers, `this` is set to the document for the current row by default. If you need more information in your template context, such as which column it is for a shared template, you can set `tmplContext` to a function which takes the row data as an argument and returns the context, like this:
+
+```js
+{
+  data: 'title',
+  title: "Title",
+  tmpl: Meteor.isClient && Template.sharedTemplate,
+  tmplContext: function (rowData) {
+    return {
+      item: rowData,
+      column: 'title'
+    };
+  }
+}
+```
 
 *Note: The `Meteor.isClient && ` is there because tables must be defined in common code, which runs on the server and client. But the `Template` object is not defined in server code, so we need to prevent errors by setting `tmpl` only on the client.*
 
@@ -148,6 +164,8 @@ Template.bookCheckOutCell.events({
 ## Searching
 
 If your table includes the global search/filter field, it will work and will update results in a manner that remains fast even with large collections. By default, all columns are searched if they can be. If you don't want a column to be searched, add the `searchable: false` option on that column.
+
+When you enter multiple search terms separated by whitespace, they are searched with an OR condition, which matches default DataTables behavior.
 
 If your table has a `selector` that already limits the results, the search happens within the selector results (i.e., your selector and the search selector are merged with an AND relationship).
 

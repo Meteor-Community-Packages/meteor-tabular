@@ -28,6 +28,11 @@ tableInit = function tableInit(tabularTable, template) {
       // When the cell is created, render it's content from
       // the provided template with row data.
       col.createdCell = function (cell, cellData, rowData) {
+        // Allow the table to adjust the template context if desired
+        if (typeof col.tmplContext === 'function') {
+          rowData = col.tmplContext(rowData);
+        }
+
         Blaze.renderWithData(tmpl, rowData, cell);
       };
 
