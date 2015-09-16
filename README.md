@@ -204,7 +204,6 @@ TabularTables.People = new Tabular.Table({
 });
 ```
 
-
 ## Modifying the Selector
 
 If your table requires the selector to be modified before it's published, you can modify it with the `changeSelector` method. This can be useful for modifying what will be returned in a search. It's called only on the server.
@@ -350,6 +349,12 @@ TabularTables.AppFeedback = new Tabular.Table({
 
 Some useful tips
 
+### Get the DataTable instance
+
+```js
+var dt = $(theTableElement).DataTable();
+```
+
 ### Detect row clicks and get row data
 
 ```js
@@ -359,6 +364,14 @@ Template.myTemplate.events({
     var rowData = dataTable.row(event.currentTarget).data();
   }
 });
+```
+
+### Search in one column
+
+```js
+var dt = $(theTableElement).DataTable();
+var indexOfColumnToSearch = 0;
+dt.column(indexOfColumnToSearch).search('search terms').draw();
 ```
 
 ### Adjust column widths
