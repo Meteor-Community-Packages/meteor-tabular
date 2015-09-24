@@ -68,7 +68,7 @@ getPubSelector = function getPubSelector(selector, searchString, searchFields, s
     result = {$or: searches};
   }
 
-  console.log(result);
+  //console.log(result);
 
   return result;
 };
