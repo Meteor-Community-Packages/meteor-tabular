@@ -204,6 +204,8 @@ TabularTables.People = new Tabular.Table({
 });
 ```
 
+
+
 ## Modifying the Selector
 
 If your table requires the selector to be modified before it's published, you can modify it with the `changeSelector` method. This can be useful for modifying what will be returned in a search. It's called only on the server.
@@ -218,6 +220,22 @@ TabularTables.Posts = new Tabular.Table({
 });
 ```
 
+## Saving state
+
+Should you require the current state of pagination, sorting, search, etc to be saved you can use the default functionality of Datatables.
+
+Add stateSave as a property when defining the Datatable.
+```js
+TabularTables.Posts = new Tabular.Table({
+  // other properties...
+  stateSave: true
+});
+```
+
+Add an ID parameter to the template include. This is used in localstorage by datatables to keep the state of your table. Without this state saving will not work.
+```html
+{{> tabular table=TabularTables.Posts id="poststableid" selector=selector class="table table-striped table-bordered table-condensed"}}
+```
 
 ## Security
 
