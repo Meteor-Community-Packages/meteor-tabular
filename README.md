@@ -274,6 +274,15 @@ TabularTables.Books = new Tabular.Table({
 
 Currently there is only one hook provided: `onUnload`
 
+## Rendering a responsive table
+
+Use these table options:
+
+```js
+responsive: true,
+autoWidth: false,
+``
+
 ## Using a Custom Publish Function
 
 This package takes care of publication and subscription for you using two built-in publications. The first publication determines the list of document `_id`s that
