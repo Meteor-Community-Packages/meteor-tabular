@@ -281,7 +281,7 @@ Use these table options:
 ```js
 responsive: true,
 autoWidth: false,
-``
+```
 
 ## Using a Custom Publish Function
 
