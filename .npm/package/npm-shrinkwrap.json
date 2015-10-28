@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "datatables": {
-      "version": "1.10.7",
+      "version": "1.10.9",
       "dependencies": {
         "jquery": {
           "version": "2.1.4"
