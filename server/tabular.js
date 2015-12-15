@@ -141,6 +141,9 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
     }
   }
 
+  updateRecords();
+  self.ready();
+
   // Handle docs being added or removed from the result set.
   var initializing1 = true;
   var handle1 = filteredCursor.observeChanges({
@@ -176,9 +179,6 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
     }
   });
   initializing2 = false;
-
-  updateRecords();
-  self.ready();
 
   // Stop observing the cursors when client unsubs.
   // Stopping a subscription automatically takes
