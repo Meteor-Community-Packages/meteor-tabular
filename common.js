@@ -35,6 +35,7 @@ Tabular.Table = function (options) {
   self.allow = options.allow;
   self.allowFields = options.allowFields;
   self.changeSelector = options.changeSelector;
+  self.throttleRefresh = options.throttleRefresh;
 
   if (_.isArray(options.extraFields)) {
     var fields = {};

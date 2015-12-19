@@ -24,6 +24,7 @@ var tabularOnRendered = function () {
   template.tabular.searchFields = null;
   template.tabular.searchCaseInsensitive = true;
   template.tabular.tableName = new ReactiveVar(null);
+  template.tabular.throttleRefresh = new ReactiveVar(null);
   template.tabular.options = new ReactiveVar({}, Util.objectsAreEqual);
   template.tabular.docPub = new ReactiveVar(null);
   template.tabular.collection = new ReactiveVar(null);
@@ -151,6 +152,7 @@ var tabularOnRendered = function () {
     template.tabular.searchCaseInsensitive = (tabularTable.options && tabularTable.options.search && tabularTable.options.search.caseInsensitive) || true;
     template.tabular.options.set(tabularTable.options);
     template.tabular.tableName.set(tabularTable.name);
+    template.tabular.throttleRefresh.set(tabularTable.throttleRefresh);
     template.tabular.docPub.set(tabularTable.pub);
     template.tabular.collection.set(tabularTable.collection);
 
@@ -182,7 +184,8 @@ var tabularOnRendered = function () {
       template.tabular.pubSelector.get(),
       template.tabular.sort.get(),
       template.tabular.skip.get(),
-      template.tabular.limit.get()
+      template.tabular.limit.get(),
+      template.tabular.throttleRefresh.get()
     );
   });
 
