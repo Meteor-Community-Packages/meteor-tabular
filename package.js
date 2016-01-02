@@ -20,7 +20,8 @@ Package.onUse(function(api) {
     'blaze',
     'templating',
     'reactive-var',
-    'tracker'
+    'tracker',
+    'ecmascript'
   ]);
 
   // jquery is a weak reference in case you want to use a different package or
@@ -31,6 +32,7 @@ Package.onUse(function(api) {
   api.use(['meteorhacks:subs-manager@1.2.0'], ['client', 'server'], {weak: true});
 
   api.export('Tabular');
+  api.export('Util', 'client');
 
   api.addFiles('common.js');
   api.addFiles('server/tabular.js', 'server');
@@ -64,4 +66,19 @@ Package.onUse(function(api) {
       'images/sort_desc_disabled.png'
     ], 'client');
   }
+});
+
+// Follow this guide: https://github.com/awatson1978/meteor-cookbook/blob/master/cookbook/writing.unit.tests.md
+Package.onTest(function(api) {
+  // Tiny Test
+  api.use(['aldeed:tabular', 'tinytest']);
+  api.use([
+    'anti:fake',
+    'check',
+    'underscore',
+    'reactive-var',
+    'tracker',
+    'ecmascript'
+  ]);
+  api.addFiles('package-tests.js', ['client']);
 });

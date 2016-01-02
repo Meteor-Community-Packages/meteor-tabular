@@ -46,6 +46,16 @@ var tabularOnRendered = function () {
       // the first subscription, which will then trigger the
       // second subscription.
 
+      // Extend the data object to include options search parameters
+      for(var i=0,j=data.columns.length; i<j; i++){
+        data.columns[i].class = template.tabular.columns[i].class;
+        data.columns[i].query = template.tabular.columns[i].query;
+        if (data.columns[i].data === template.tabular.columns[i].data) {
+          data.columns[i].options = template.tabular.columns[i].options || null;
+          // console.log(data.columns[i].options);
+        }
+      }
+
       template.tabular.isLoading.set(true);
       //console.log('data', template.tabular.data);
 
@@ -70,7 +80,7 @@ var tabularOnRendered = function () {
       // Update sort
       template.tabular.sort.set(Util.getMongoSort(data.order, template.tabular.columns));
       // Update pubSelector
-      var pubSelector = getPubSelector(
+      var pubSelector = Util.getPubSelector(
         template.tabular.selector,
         (data.search && data.search.value) || null,
         template.tabular.searchFields,

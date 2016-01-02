@@ -47,8 +47,19 @@ tableInit = function tableInit(tabularTable, template) {
       col.defaultContent = "";
     }
 
-    // Build the list of field names we want included
-    var dataProp = col.data;
+    // Find the correct collection to search/sort, for backwards compatibility
+    // Check if a class is set, otherwise revert to default data() attribute
+    // The class value circumvent issues with a data attribute  set as an
+    // instance function (i.e. a collection helper: "()" )
+    if (col.query === undefined) {
+      if (col.class === undefined) {
+        col.query = col.data;
+      } else {
+        col.query = col.class;
+      }
+    }
+    var dataProp = col.query;
+
     if (typeof dataProp === "string") {
       // If it's referencing an instance function, don't
       // include it. Prevent sorting and searching because
@@ -56,8 +67,15 @@ tableInit = function tableInit(tabularTable, template) {
       if (dataProp.indexOf("()") !== -1) {
         col.orderable = false;
         col.searchable = false;
-        return;
       }
+
+      // Assume default behavior is to search and sort all columns by
+      // query, but allow user to set optional arguments
+      if (col.options !== undefined) {
+        if (col.options.orderable === false) col.orderable = false;
+        if (col.options.searchable === false) col.searchable = false;
+      }
+
 
       fields[Util.cleanFieldName(dataProp)] = 1;
 
