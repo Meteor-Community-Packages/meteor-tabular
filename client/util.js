@@ -111,15 +111,17 @@ Util.parseMultiFieldColumns = function parseMultiFieldColumns(columns) {
 
   // iterate through each space-separated term in the class string
   _.each(columns, function (col) {
-    var ColClasses = col.class.split(' ');
-    if (ColClasses.length > 1) {
-      _.each(ColClasses, function (ColClass) {
-        UpdateQuery(ColClass, col);
-      });
-      // Now remove the original column with multiple classes and no formatted (single) query
-      columns = _.filter(columns, function(item) {
-        return item.query !== undefined && (item.query !== col.class || item.class !== col.class);
-      });
+    if (typeof(col.class) === 'string') {
+      var ColClasses = col.class.split(' ');
+      if (ColClasses.length > 1) {
+        _.each(ColClasses, function (ColClass) {
+          UpdateQuery(ColClass, col);
+        });
+        // Now remove the original column with multiple classes and no formatted (single) query
+        columns = _.filter(columns, function(item) {
+          return item.query !== undefined && (item.query !== col.class || item.class !== col.class);
+        });
+      }
     }
   });
   return columns;
@@ -192,14 +194,15 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
   // matches string fields only.
   var searches = [];
 
+  // Originally:
+  // searchFields = _.isEmpty(searchColumns) ? searchFields : searchColumns;
+  // But expanded to:
   if (_.isEmpty(searchColumns)) {
     if (!Array.isArray(columns)) {
       console.error('createMongoDBQuery() - columns must be an array');
     }
     // normalize search fields array to mirror the structure
     // as passed by the datatables ajax.data function
-    // searchFields = _.map(searchFields, function(field) {
-    // Assume everything can be searched and instead extend searchFields
     var searchFields = _.map(columns, function(col) {
       return {
         data: col.query,
@@ -221,14 +224,14 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
     // above searchFields format, use the user-supplied data
     var searchFields = searchColumns;
   }
-  // searchFields = _.isEmpty(searchColumns) ? searchFields : searchColumns;
 
   _.each(searchFields, function(field) {
     var searchValue = field.search.value || '';
 
     // Split and OR by whitespace, as per default DataTables search behavior
     if (field.options !== undefined
-      && typeof(field.options.SplitBy) === 'string') {
+      && field.options !== null
+      && field.options.SplitBy !== undefined) {
       searchValue = searchValue.split(field.options.SplitBy)
     } else {
       searchValue = searchValue.match(/\S+/g);
@@ -257,7 +260,9 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
   });
 
   var result;
-  if (selector === undefined) {
+  console.log('result');
+  console.log(result);
+  if (selector === null || selector === undefined) {
     result = {$or: searches};
   } else {
     result = {$and: [selector, {$or: searches}]};
@@ -272,9 +277,6 @@ Util.getPubSelector = function getPubSelector(selector, searchString, searchFiel
   // Address multiple classes by creating multiple "columns" with each query
   columns = Util.parseMultiFieldColumns(columns, null);
 
-  // console.log('Pushed Column Data:');
-  // console.log(columns);
-
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // if search was invoked via .columns().search(), build a query off that
   // https://datatables.net/reference/api/columns().search()
@@ -288,12 +290,12 @@ Util.getPubSelector = function getPubSelector(selector, searchString, searchFiel
     return selector;
   }
 
+  // Create MongoDB Query
   var result = Util.createMongoDBQuery(selector, searchString, searchColumns, searchCaseInsensitive, columns);
 
-  console.log('Result used in MongoDB query:');
-  console.log(result);
-  // console.log(result['$and'][1]['$or']);
-  console.log(' ');
+  // Very useful for debugging and creating your own selectors
+  // console.log('Result of getPubSelector:');
+  // console.log(result);
 
   return result;
 };
