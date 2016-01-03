@@ -72,7 +72,7 @@ tableInit = function tableInit(tabularTable, template) {
 
       // To prevent searching and sorting, simply set the property,
       // 'searchable: false' (or sortable) next to the definition
-      // of the 'data: ...' field
+      // of the 'data: "..." ' field
 
       fields[Util.cleanFieldName(dataProp)] = 1;
 

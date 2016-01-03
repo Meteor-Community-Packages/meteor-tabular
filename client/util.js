@@ -65,7 +65,12 @@ Util.getMongoSort = function getMongoSort(order, columns) {
     var orderable = columns[ord.column].orderable;
     // Use 'query' to account for un-sortable instance functions in 'data':
     // If multiple names, accept first propName as listed by user
-    var propName = columns[ord.column].query;
+    if (columns[ord.column].options !== undefined
+      && typeof(columns[ord.column].options.sortfield) === 'string') {
+      var propName = columns[ord.column].options.sortfield;
+    } else {
+      var propName = columns[ord.column].query;
+    }
     var propNames = propName.split(' ');
     // Ignore instance functions like "foo()"
     if (propNames[0].indexOf("()") !== -1) {
@@ -207,7 +212,7 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
       return {
         data: col.query,
         search: {
-          value: searchString
+          value: col.searchable ? searchString : ''
         },
         class: col.class,
         options: col.options

@@ -57,7 +57,10 @@ function GenerateBothColumns(SpacedClassList) {
 		BothCols.columns.push({
 			class: ClassList,
 			query: ClassList,
-			orderable: true
+			orderable: true,
+			options: {
+				sortfield: 'url'
+			}
 		})
 		var Classes = ClassList.split(' ')
 		BothCols.ExpectedOutput = BothCols.ExpectedOutput.concat(
@@ -65,7 +68,10 @@ function GenerateBothColumns(SpacedClassList) {
 				return {
 					class: ClassList,
 					query: Class,
-					orderable: true
+					orderable: true,
+					options: {
+						sortfield: 'url'
+					}
 				}
 			})
 		)
@@ -83,7 +89,8 @@ Tinytest.add('Util - getMongoSort', function (test) {
 		column: 1,
 		dir: 'asc'
 	}]
-	var ExpectedOutput =  [["ClassTwo","asc"]]
+	// var ExpectedOutput =  [["ClassTwo","asc"]]
+	var ExpectedOutput =  [["url","asc"]]
 	var Output = Util.getMongoSort(order, BothCols.columns)
 	LogResults(BothCols.columns, ExpectedOutput, Output, test)
 })
