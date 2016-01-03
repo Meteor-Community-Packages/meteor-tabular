@@ -61,7 +61,8 @@ tableInit = function tableInit(tabularTable, template) {
     var dataProp = col.query;
 
     if (typeof dataProp === "string") {
-      // If it's referencing an instance function, don't
+      // If after manipulating the dataProp value, the data property
+      // is still referencing an instance function, don't
       // include it. Prevent sorting and searching because
       // our pub function won't be able to do it.
       if (dataProp.indexOf("()") !== -1) {
@@ -69,13 +70,9 @@ tableInit = function tableInit(tabularTable, template) {
         col.searchable = false;
       }
 
-      // Assume default behavior is to search and sort all columns by
-      // query, but allow user to set optional arguments
-      if (col.options !== undefined) {
-        if (col.options.orderable === false) col.orderable = false;
-        if (col.options.searchable === false) col.searchable = false;
-      }
-
+      // To prevent searching and sorting, simply set the property,
+      // 'searchable: false' (or sortable) next to the definition
+      // of the 'data: ...' field
 
       fields[Util.cleanFieldName(dataProp)] = 1;
 

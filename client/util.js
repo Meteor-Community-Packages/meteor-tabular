@@ -250,18 +250,18 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
       searches.push(m1);
 
       // Doesn't work yet:
-      // // Number search
-      // var numSearchString = Number(searchTerm);
-      // if (!isNaN(numSearchString)) {
-      //   m2[field.data] = numSearchString;
-      //   searches.push(m2);
-      // }
+      // Number search
+      var numSearchString = Number(searchTerm);
+      if (!isNaN(numSearchString)) {
+        m2[field.data] = numSearchString;
+        searches.push(m2);
+      }
     });
   });
 
   var result;
-  console.log('result');
-  console.log(result);
+  // console.log('result');
+  // console.log(result);
   if (selector === null || selector === undefined) {
     result = {$or: searches};
   } else {
