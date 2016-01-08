@@ -16,6 +16,42 @@ Although this appears similar to the [jquery-datatables](https://github.com/Luma
 * This package handles the reactive table updates in a different way.
 * This package is designed to work with Twitter Bootstrap 3
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [aldeed:tabular](#aldeedtabular)
+  - [Installation](#installation)
+  - [Online Demo App](#online-demo-app)
+  - [Example](#example)
+  - [Displaying Only Part of a Collection's Data Set](#displaying-only-part-of-a-collections-data-set)
+  - [Passing Options to the DataTable](#passing-options-to-the-datatable)
+  - [Template Cells](#template-cells)
+  - [Searching](#searching)
+    - [Customizing Search Behavior](#customizing-search-behavior)
+  - [Using Collection Helpers](#using-collection-helpers)
+  - [Publishing Extra Fields](#publishing-extra-fields)
+  - [Modifying the Selector](#modifying-the-selector)
+  - [Saving state](#saving-state)
+  - [Security](#security)
+  - [Caching the Documents](#caching-the-documents)
+  - [Hooks](#hooks)
+  - [Rendering a responsive table](#rendering-a-responsive-table)
+  - [Active Datasets](#active-datasets)
+  - [Using a Custom Publish Function](#using-a-custom-publish-function)
+    - [Example](#example-1)
+  - [Tips](#tips)
+    - [Get the DataTable instance](#get-the-datatable-instance)
+    - [Detect row clicks and get row data](#detect-row-clicks-and-get-row-data)
+    - [Search in one column](#search-in-one-column)
+    - [Adjust column widths](#adjust-column-widths)
+    - [Turning Off Paging or Showing "All"](#turning-off-paging-or-showing-all)
+    - [Customize the "Processing" Message](#customize-the-processing-message)
+    - [I18N Example](#i18n-example)
+  - [Integrating DataTables Extensions](#integrating-datatables-extensions)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Installation
 
 ```bash
@@ -25,6 +61,10 @@ $ meteor add aldeed:tabular
 ## Online Demo App
 
 View a [demonstration project on Meteorpad](http://meteorpad.com/pad/xNafF9N5XJNrFJEyG/TabularDemo).
+
+Another example app courtesy of @AnnotatedJS:
+* Hosted app: http://greatalbums.meteor.com/albums (You can sign in with email "admin@demo.com" and password "password")
+* Source: https://github.com/AnnotatedJS/GreatAlbums
 
 ## Example
 
