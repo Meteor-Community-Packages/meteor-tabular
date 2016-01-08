@@ -122,6 +122,10 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
   function updateRecords() {
     var currentCount = countCursor.count();
 
+    // From https://datatables.net/manual/server-side
+    // recordsTotal: Total records, before filtering (i.e. the total number of records in the database)
+    // recordsFiltered: Total records, after filtering (i.e. the total number of records after filtering has been applied - not just the number of records being returned for this page of data).
+
     var record = {
       ids: filteredRecordIds,
       // count() will give us the updated total count
@@ -141,13 +145,15 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
     }
   }
 
+  updateRecords();
+
+  self.ready();
+
   // Handle docs being added or removed from the result set.
-  var initializing1 = true;
-  var handle1 = filteredCursor.observeChanges({
+  var initializing = true;
+  var handle = filteredCursor.observeChanges({
     added: function (id) {
-      if (initializing1) {
-        return;
-      }
+      if (initializing) return;
 
       //console.log("ADDED");
       filteredRecordIds.push(id);
@@ -159,32 +165,19 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
       updateRecords();
     }
   });
-  initializing1 = false;
+  initializing = false;
 
-  // Handle docs being added or removed from the non-limited set.
-  // This allows us to get total count available.
-  var initializing2 = true;
-  var handle2 = countCursor.observeChanges({
-    added: function () {
-      if (initializing2) {
-        return;
-      }
-      updateRecords();
-    },
-    removed: function () {
-      updateRecords();
-    }
-  });
-  initializing2 = false;
-
-  updateRecords();
-  self.ready();
+  // It is too inefficient to use an observe without any limits to track count perfectly
+  // accurately when, for example, the selector is {} and there are a million documents.
+  // Instead we will update the count every 10 seconds, in addition to whenever the limited
+  // result set changes.
+  var interval = Meteor.setInterval(updateRecords, 10000);
 
   // Stop observing the cursors when client unsubs.
   // Stopping a subscription automatically takes
   // care of sending the client any removed messages.
   self.onStop(function () {
-    handle1.stop();
-    handle2.stop();
+    Meteor.clearInterval(interval);
+    handle.stop();
   });
 });
