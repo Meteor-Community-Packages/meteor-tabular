@@ -31,11 +31,6 @@ Meteor.publish("tabular_genericPub", function (tableName, ids, fields) {
     return;
   }
 
-  // Extend fields list with extra fields from the table definition
-  if (table.extraFields) {
-    _.extend(fields, table.extraFields);
-  }
-
   // Check security. We call this in both publications.
   if (typeof table.allow === 'function' && !table.allow(self.userId, fields)) {
     self.ready();

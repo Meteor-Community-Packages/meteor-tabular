@@ -317,11 +317,11 @@ The most common reason to override the second publication with your own custom o
 
 To tell Tabular to use your custom publish function, pass the publication name as the `pub` option. Your function:
 
-* must accept and check three arguments: `tableName`, `ids`, and `fields`
-* must publish all the documents where `_id` is in the `ids` array.
-* should publish only the fields listed in the `fields` object, if one is provided.
-* should do any necessary security checks
-* may also publish other data necessary for your table
+* MUST accept and check three arguments: `tableName`, `ids`, and `fields`
+* MUST publish all the documents where `_id` is in the `ids` array.
+* MUST do any necessary security checks
+* SHOULD publish only the fields listed in the `fields` object, if one is provided.
+* MAY also publish other data necessary for your table
 
 ### Example
 

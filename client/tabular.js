@@ -223,11 +223,20 @@ var tabularOnRendered = function () {
       return;
     }
 
+    // Extend with extraFields from table definition
+    var fields = template.tabular.fields;
+    if (fields) {
+      // Extend with extraFields from table definition
+      if (typeof template.tabular.tableDef.extraFields === 'object') {
+        fields = _.extend(_.clone(fields), template.tabular.tableDef.extraFields);
+      }
+    }
+
     template.tabular.tableDef.sub.subscribe(
       template.tabular.docPub.get(),
       tableName,
       tableInfo.ids || [],
-      template.tabular.fields
+      fields
     );
   });
 
