@@ -1,6 +1,13 @@
 /* global getPubSelector:true, _ */
 
-getPubSelector = function getPubSelector(selector, searchString, searchFields, searchCaseInsensitive, columns) {
+getPubSelector = function getPubSelector(
+    selector,
+    searchString,
+    searchFields,
+    searchCaseInsensitive,
+    splitSearchByWhitespace,
+    columns
+  ) {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // if search was invoked via .columns().search(), build a query off that
@@ -37,7 +44,11 @@ getPubSelector = function getPubSelector(selector, searchString, searchFields, s
     var searchValue = field.search.value || '';
 
     // Split and OR by whitespace, as per default DataTables search behavior
-    searchValue = searchValue.match(/\S+/g);
+    if (splitSearchByWhitespace) {
+      searchValue = searchValue.match(/\S+/g);
+    } else {
+      searchValue = [searchValue];
+    }
 
     _.each(searchValue, function (searchTerm) {
       var m1 = {}, m2 = {};

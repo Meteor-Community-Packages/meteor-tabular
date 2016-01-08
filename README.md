@@ -169,6 +169,21 @@ When you enter multiple search terms separated by whitespace, they are searched 
 
 If your table has a `selector` that already limits the results, the search happens within the selector results (i.e., your selector and the search selector are merged with an AND relationship).
 
+### Customizing Search Behavior
+
+You can add a `search` object to your table options to change the default behavior. The defaults are:
+
+```js
+{
+  search: {
+    caseInsensitive: true,
+    splitByWhitespace: true,
+  }
+}
+```
+
+You can set either of these to `false` if you prefer.
+
 ## Using Collection Helpers
 
 The DataTables library supports calling functions on the row data by appending your `data` string with `()`. This can be used along with the `dburles:collection-helpers` package (or your own collection transform). For example:
@@ -203,8 +218,6 @@ TabularTables.People = new Tabular.Table({
   extraFields: ['firstName', 'lastName']
 });
 ```
-
-
 
 ## Modifying the Selector
 

@@ -23,6 +23,7 @@ var tabularOnRendered = function () {
   template.tabular.fields = null;
   template.tabular.searchFields = null;
   template.tabular.searchCaseInsensitive = true;
+  template.tabular.splitSearchByWhitespace = true;
   template.tabular.tableName = new ReactiveVar(null);
   template.tabular.options = new ReactiveVar({}, Util.objectsAreEqual);
   template.tabular.docPub = new ReactiveVar(null);
@@ -76,6 +77,7 @@ var tabularOnRendered = function () {
         (data.search && data.search.value) || null,
         template.tabular.searchFields,
         template.tabular.searchCaseInsensitive,
+        template.tabular.splitSearchByWhitespace,
         data.columns || null
       );
       template.tabular.pubSelector.set(pubSelector);
@@ -149,7 +151,17 @@ var tabularOnRendered = function () {
     tableInit(tabularTable, template);
 
     // Set/update everything else
-    template.tabular.searchCaseInsensitive = (tabularTable.options && tabularTable.options.search && tabularTable.options.search.caseInsensitive) || true;
+    template.tabular.searchCaseInsensitive = true;
+    template.tabular.splitSearchByWhitespace = true;
+
+    if (tabularTable.options && tabularTable.options.search) {
+      if (tabularTable.options.search.caseInsensitive === false) {
+        template.tabular.searchCaseInsensitive = false;
+      }
+      if (tabularTable.options.search.splitByWhitespace === false) {
+        template.tabular.splitSearchByWhitespace = false;
+      }
+    }
     template.tabular.options.set(tabularTable.options);
     template.tabular.tableName.set(tabularTable.name);
     template.tabular.docPub.set(tabularTable.pub);
