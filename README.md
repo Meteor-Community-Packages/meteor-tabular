@@ -283,6 +283,16 @@ responsive: true,
 autoWidth: false,
 ```
 
+## Active Datasets
+
+If your table is showing a dataset that changes a lot, it could become unusable due to reactively updating too often. You can throttle how often a table updates with the following table option:
+
+```js
+throttleRefresh: 5000
+```
+
+Set it to the number of milliseconds to wait between updates, even if the data is changing more frequently.
+
 ## Using a Custom Publish Function
 
 This package takes care of publication and subscription for you using two built-in publications. The first publication determines the list of document `_id`s that

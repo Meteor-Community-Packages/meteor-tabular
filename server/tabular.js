@@ -119,7 +119,7 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
   var countCursor = table.collection.find(selector, {fields: {_id: 1}});
 
   var recordReady = false;
-  function updateRecords() {
+  var updateRecords = function updateRecords() {
     var currentCount = countCursor.count();
 
     // From https://datatables.net/manual/server-side
@@ -143,6 +143,10 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
       self.added("tabular_records", tableName, record);
       recordReady = true;
     }
+  };
+
+  if (table.throttleRefresh) {
+    updateRecords = _.throttle(updateRecords, table.throttleRefresh);
   }
 
   updateRecords();
