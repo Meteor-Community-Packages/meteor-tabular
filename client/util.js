@@ -17,16 +17,12 @@ Util.cleanFieldName = function cleanFieldName(field) {
 };
 
 Util.cleanFieldNameForSearch = function cleanFieldNameForSearch(field) {
-  // Do a quick check to see if regex is necessary:
-  if (field.indexOf('[') !== -1) {
-    // Check if object has ["foo"]
-    if (field.indexOf('\"') !== -1) {
-      console.warn('The field, '+field+' contains a " character and will not be properly parsed');
-    }
-    // Otherwise, it should be referencing an array, so replace the brackets
-    return field.replace(/\[\w+\]/, "");
+  // Check if object has ["foo"]
+  if (field.indexOf('\"') !== -1) {
+    console.warn('The field, '+field+' contains a " character and will not be properly parsed');
   }
-  return field;
+  // Otherwise, it should be referencing an array, so replace the brackets
+  return field.replace(/\[\w+\]/, "");
 };
 
 Util.sortsAreEqual = function sortsAreEqual(oldVal, newVal) {
@@ -68,8 +64,12 @@ Util.getMongoSort = function getMongoSort(order, columns) {
     if (columns[ord.column].options !== undefined
       && typeof(columns[ord.column].options.sortfield) === 'string') {
       var propName = columns[ord.column].options.sortfield;
+      console.log('Set SortField:');
+      console.log(propName);
     } else {
       var propName = columns[ord.column].query;
+      console.log('Else:');
+      console.log(propName);
     }
     var propNames = propName.split(' ');
     // Ignore instance functions like "foo()"
@@ -209,10 +209,12 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
     // normalize search fields array to mirror the structure
     // as passed by the datatables ajax.data function
     var searchFields = _.map(columns, function(col) {
+      var search = '';
+      if (col.searchable !== false) search = searchString;
       return {
         data: col.query,
         search: {
-          value: col.searchable ? searchString : ''
+          value: search
         },
         class: col.class,
         options: col.options
@@ -254,11 +256,10 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
 
       searches.push(m1);
 
-      // Doesn't work yet:
-      // Number search
+      // Number search for equal value
       var numSearchString = Number(searchTerm);
       if (!isNaN(numSearchString)) {
-        m2[field.data] = numSearchString;
+        m2[field.data] = { $eq: numSearchString };
         searches.push(m2);
       }
     });
