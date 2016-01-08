@@ -158,7 +158,7 @@ var tabularOnRendered = function () {
       if (tabularTable.options.search.caseInsensitive === false) {
         template.tabular.searchCaseInsensitive = false;
       }
-      if (tabularTable.options.search.splitByWhitespace === false) {
+      if (tabularTable.options.search.smart === false) {
         template.tabular.splitSearchByWhitespace = false;
       }
     }

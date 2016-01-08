@@ -177,12 +177,14 @@ You can add a `search` object to your table options to change the default behavi
 {
   search: {
     caseInsensitive: true,
-    splitByWhitespace: true,
+    smart: true,
   }
 }
 ```
 
-You can set either of these to `false` if you prefer.
+You can set either of these to `false` if you prefer. See http://datatables.net/reference/option/search
+
+The `regex` option is not yet supported.
 
 ## Using Collection Helpers
 
