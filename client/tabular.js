@@ -37,6 +37,7 @@ var tabularOnRendered = function () {
   var ajaxOptions = {
     // tell DataTables that we're getting the table data from a server
     serverSide: true,
+    processing: true,
     // define the function that DataTables will call upon first load and whenever
     // we tell it to reload data, such as when paging, etc.
     ajax: function (data, callback/*, settings*/) {
@@ -321,8 +322,6 @@ var tabularOnRendered = function () {
     // Get data as array for DataTables to consume in the ajax function
     template.tabular.data = cursor.fetch();
 
-    template.tabular.isLoading.set(false);
-
     // For these types of reactive changes, we don't want to
     // reset the page we're on, so we pass `false` as second arg.
     // The exception is if we changed the results-per-page number,
@@ -336,12 +335,18 @@ var tabularOnRendered = function () {
       }
     }
 
+    template.tabular.isLoading.set(false);
   });
 
   // XXX Not working
   template.autorun(function () {
-    var visibility = template.tabular.isLoading.get() ? 'visible' : 'hidden';
-    template.$('.dataTables_processing').css('visibility', visibility);
+    var isLoading = template.tabular.isLoading.get();
+    //console.log('LOADING', isLoading);
+    if (isLoading) {
+      template.$('.dataTables_processing').show();
+    } else {
+      template.$('.dataTables_processing').hide();
+    }
   });
 
   // force table paging to reset to first page when we change page length

@@ -421,6 +421,10 @@ By default, the DataTables library uses automatic column width calculations. If 
 
 When using no paging or an "All" (-1) option in the page limit list, it is best to also add a hard limit in your table options like `limit: 500`, unless you know the collection will always be very small.
 
+### Customize the "Processing" Message
+
+To customize the "Processing" message appearance, use CSS selector `div.dataTables_wrapper div.dataTables_processing`. To change or translate the text, see https://datatables.net/reference/option/language.processing
+
 ## Integrating DataTables Extensions
 
 There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables.
