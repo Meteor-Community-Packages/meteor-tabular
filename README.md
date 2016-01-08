@@ -440,6 +440,25 @@ When using no paging or an "All" (-1) option in the page limit list, it is best 
 
 To customize the "Processing" message appearance, use CSS selector `div.dataTables_wrapper div.dataTables_processing`. To change or translate the text, see https://datatables.net/reference/option/language.processing
 
+### I18N Example
+
+Before rendering the table on the client:
+
+
+```js
+if (Meteor.isClient) {
+	$.extend(true, $.fn.dataTable.defaults, {
+		language: {
+      "lengthMenu": i18n("tableDef.lengthMenu"),
+      "zeroRecords": i18n("tableDef.zeroRecords"),
+      "info": i18n("tableDef.info"),
+      "infoEmpty": i18n("tableDef.infoEmpty"),
+      "infoFiltered": i18n("tableDef.infoFiltered")
+    }
+	});
+}
+```
+
 ## Integrating DataTables Extensions
 
 There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables.
