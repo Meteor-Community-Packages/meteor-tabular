@@ -218,13 +218,14 @@ You can add a `search` object to your table options to change the default behavi
   search: {
     caseInsensitive: true,
     smart: true,
+    onEnterOnly: false,
   }
 }
 ```
 
-You can set either of these to `false` if you prefer. See http://datatables.net/reference/option/search
+You can set `caseInsensitive` or `smart` to `false` if you prefer. See http://datatables.net/reference/option/search. The `regex` option is not yet supported.
 
-The `regex` option is not yet supported.
+`onEnterOnly` is custom to this package. Set it to `true` to run search only when the user presses ENTER in the search box, rather than on keyup. This is useful for large collections to avoid slow searching.
 
 ## Using Collection Helpers
 
