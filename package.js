@@ -1,10 +1,10 @@
 /* global Package, Npm */
 
 Package.describe({
-  name: 'aldeed:tabular',
+  name: 'vansonhk:tabular',
   summary: 'Datatables for large or small datasets in Meteor',
-  version: '1.5.1',
-  git: 'https://github.com/aldeed/meteor-tabular.git'
+  version: '1.5.1.1',
+  git: 'https://github.com/VansonLeung/meteor-tabular.git'
 });
 
 Npm.depends({

@@ -119,6 +119,10 @@ var tabularOnRendered = function () {
       throw new Error("You must pass Tabular.Table instance as the table attribute");
     }
 
+    tableRefreshColTitle(tabularTable, template);
+
+
+
     // Always update the selector reactively
     template.tabular.selector = data.selector;
 
