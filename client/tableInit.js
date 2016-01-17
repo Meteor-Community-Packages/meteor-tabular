@@ -89,12 +89,15 @@ tableInit = function tableInit(tabularTable, template) {
 
     if (typeof col.titleFn === 'function') {
       col.title = col.titleFn();
+      col.sTitle = col.titleFn();
     }
   });
 
   template.tabular.columns = columns;
   template.tabular.fields = fields;
   template.tabular.searchFields = searchFields;
+
+  tableRefreshColTitle(tabularTable, template);
 };
 
 
@@ -105,6 +108,7 @@ tableRefreshColTitle = function tableRefreshColTitle(tabularTable, template) {
 
     if (typeof col.titleFn === 'function') {
       col.title = col.titleFn();
+      col.sTitle = col.titleFn();
     }
   });
 
