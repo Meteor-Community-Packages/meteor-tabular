@@ -1,7 +1,9 @@
-aldeed:tabular
+# aldeed:tabular
 =========================
 
 A Meteor package that creates reactive [DataTables](http://datatables.net/) in an efficient way, allowing you to display the contents of enormous collections without impacting app performance.
+
+### Modified by Vanson Leung - column title localization supported 2015 01 17
 
 * Fast: Uses an intelligent automatic data subscription so that table data is not loaded until it's needed.
 * Reactive: As your collection data changes, so does your table. You can also reactively update the query selector if you provide your own filter buttons outside of the table.

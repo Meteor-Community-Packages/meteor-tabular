@@ -3,7 +3,7 @@
 Package.describe({
   name: 'vansonhk:tabular',
   summary: 'Datatables for large or small datasets in Meteor',
-  version: '1.5.2',
+  version: '1.5.3',
   git: 'https://github.com/VansonLeung/meteor-tabular.git'
 });
 

@@ -86,6 +86,10 @@ tableInit = function tableInit(tabularTable, template) {
         return data;
       };
     }
+
+    if (typeof col.titleFn === 'function') {
+      col.title = col.titleFn();
+    }
   });
 
   template.tabular.columns = columns;
