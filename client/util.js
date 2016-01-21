@@ -193,7 +193,7 @@ Util.createRegExp = function createRegExp(field, searchTerm) {
   return Query;
 }
 
-Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, searchColumns, searchCaseInsensitive, columns) {
+Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, searchColumns, searchCaseInsensitive, splitSearchByWhitespace, columns) {
   // See if we can resolve the search string to a number,
   // in which case we use an extra query because $regex
   // matches string fields only.
@@ -240,8 +240,10 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
       && field.options !== null
       && field.options.SplitBy !== undefined) {
       searchValue = searchValue.split(field.options.SplitBy)
-    } else {
+    } else if (splitSearchByWhitespace) {
       searchValue = searchValue.match(/\S+/g);
+    } else {
+      searchValue = [searchValue];
     }
 
     _.each(searchValue, function (searchTerm) {
@@ -278,7 +280,7 @@ Util.createMongoDBQuery = function createMongoDBQuery(selector, searchString, se
 
 
 
-Util.getPubSelector = function getPubSelector(selector, searchString, searchFields, searchCaseInsensitive, columns) {
+Util.getPubSelector = function getPubSelector(selector, searchString, searchFields, searchCaseInsensitive, splitSearchByWhitespace, columns) {
 
   // Address multiple classes by creating multiple "columns" with each query
   columns = Util.parseMultiFieldColumns(columns, null);
@@ -297,7 +299,7 @@ Util.getPubSelector = function getPubSelector(selector, searchString, searchFiel
   }
 
   // Create MongoDB Query
-  var result = Util.createMongoDBQuery(selector, searchString, searchColumns, searchCaseInsensitive, columns);
+  var result = Util.createMongoDBQuery(selector, searchString, searchColumns, searchCaseInsensitive, splitSearchByWhitespace, columns);
 
   // Very useful for debugging and creating your own selectors
   // console.log('Result of getPubSelector:');

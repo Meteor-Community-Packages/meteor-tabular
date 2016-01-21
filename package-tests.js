@@ -195,7 +195,7 @@ Tinytest.add('Util createMongoDBQuery - Single Column', function (test) {
 	var searchString = 'TestSearch'
 	var BothCols = GenerateBothColumns(SpacedClassList)
 	// var Output = Util.createMongoDBQuery(BothCols.ExpectedOutput)
-	var Output = Util.createMongoDBQuery({}, searchString, {}, true, BothCols.ExpectedOutput)
+	var Output = Util.createMongoDBQuery({}, searchString, {}, true, true, BothCols.ExpectedOutput)
 	var ExpectedOutput = {
 	  "$and":[
 	    { },
@@ -219,7 +219,7 @@ Tinytest.add('Util createMongoDBQuery - Multiple Query', function (test) {
 	var searchString = 'TestSearch'
 	var BothCols = GenerateBothColumns(SpacedClassList)
 	var Output = Util.createMongoDBQuery({}, searchString, {},
-		true, BothCols.ExpectedOutput)
+		true, true, BothCols.ExpectedOutput)
 
 	var ExpectedOutput = {
 	  "$and":[
@@ -265,7 +265,7 @@ Tinytest.add('Util createMongoDBQuery - Existing Selector', function (test) {
 	  ]
 	}
 	var Output = Util.createMongoDBQuery(selector, searchString, {},
-		true, BothCols.ExpectedOutput)
+		true, true, BothCols.ExpectedOutput)
 
 	var ExpectedOutput = {
 	  "$and":[
@@ -305,7 +305,7 @@ Tinytest.add('Util createMongoDBQuery - Specified Columns', function (test) {
 	// This must be an object and not an array:
 	var Input = createRegExpField(SpacedClassList, searchString, {})
 	var Output = Util.createMongoDBQuery({}, searchString,
-		Input, true, {})
+		Input, true, true, {})
 	var ExpectedOutput = {
 	  "$and":[
 	    {
@@ -341,7 +341,7 @@ Tinytest.add('Util Integration - getPubSelector', function (test) {
 	var searchString = 'TestSearch'
 	var BothCols = GenerateBothColumns(SpacedClassList)
 	var Output = Util.getPubSelector({}, searchString, {}, true,
-		BothCols.ExpectedOutput)
+		true, BothCols.ExpectedOutput)
 	var ExpectedOutput = {"$and":[{},{"$or":[{"one":{"$regex":"TestSearch","$options":"i"}}]}]}
 	LogResults(BothCols.ExpectedOutput, ExpectedOutput, Output, test)
 })

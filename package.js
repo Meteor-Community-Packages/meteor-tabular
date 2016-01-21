@@ -3,12 +3,12 @@
 Package.describe({
   name: 'aldeed:tabular',
   summary: 'Datatables for large or small datasets in Meteor',
-  version: '1.4.2',
+  version: '1.5.2',
   git: 'https://github.com/aldeed/meteor-tabular.git'
 });
 
 Npm.depends({
-  datatables: '1.10.7'
+  datatables: '1.10.9'
 });
 
 Package.onUse(function(api) {
@@ -80,5 +80,12 @@ Package.onTest(function(api) {
     'tracker',
     'ecmascript'
   ]);
+
   api.addFiles('package-tests.js', ['client']);
+
+  // // TODO: Split up long file into bite-size files:
+  // api.addFiles('test_resused_functions.js', ['client']);
+  // api.addFiles('test_util.js', ['client']);
+  // api.addFiles('test_util_createMongoDBQuery.js', ['client']);
+  // api.addFiles('test_util_integration.js', ['client']);
 });

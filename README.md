@@ -16,6 +16,42 @@ Although this appears similar to the [jquery-datatables](https://github.com/Luma
 * This package handles the reactive table updates in a different way.
 * This package is designed to work with Twitter Bootstrap 3
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [aldeed:tabular](#aldeedtabular)
+  - [Installation](#installation)
+  - [Online Demo App](#online-demo-app)
+  - [Example](#example)
+  - [Displaying Only Part of a Collection's Data Set](#displaying-only-part-of-a-collections-data-set)
+  - [Passing Options to the DataTable](#passing-options-to-the-datatable)
+  - [Template Cells](#template-cells)
+  - [Searching](#searching)
+    - [Customizing Search Behavior](#customizing-search-behavior)
+  - [Using Collection Helpers](#using-collection-helpers)
+  - [Publishing Extra Fields](#publishing-extra-fields)
+  - [Modifying the Selector](#modifying-the-selector)
+  - [Saving state](#saving-state)
+  - [Security](#security)
+  - [Caching the Documents](#caching-the-documents)
+  - [Hooks](#hooks)
+  - [Rendering a responsive table](#rendering-a-responsive-table)
+  - [Active Datasets](#active-datasets)
+  - [Using a Custom Publish Function](#using-a-custom-publish-function)
+    - [Example](#example-1)
+  - [Tips](#tips)
+    - [Get the DataTable instance](#get-the-datatable-instance)
+    - [Detect row clicks and get row data](#detect-row-clicks-and-get-row-data)
+    - [Search in one column](#search-in-one-column)
+    - [Adjust column widths](#adjust-column-widths)
+    - [Turning Off Paging or Showing "All"](#turning-off-paging-or-showing-all)
+    - [Customize the "Processing" Message](#customize-the-processing-message)
+    - [I18N Example](#i18n-example)
+  - [Integrating DataTables Extensions](#integrating-datatables-extensions)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Installation
 
 ```bash
@@ -25,6 +61,10 @@ $ meteor add aldeed:tabular
 ## Online Demo App
 
 View a [demonstration project on Meteorpad](http://meteorpad.com/pad/xNafF9N5XJNrFJEyG/TabularDemo).
+
+Another example app courtesy of @AnnotatedJS:
+* Hosted app: http://greatalbums.meteor.com/albums (You can sign in with email "admin@demo.com" and password "password")
+* Source: https://github.com/AnnotatedJS/GreatAlbums
 
 ## Example
 
@@ -169,6 +209,23 @@ When you enter multiple search terms separated by whitespace, they are searched 
 
 If your table has a `selector` that already limits the results, the search happens within the selector results (i.e., your selector and the search selector are merged with an AND relationship).
 
+### Customizing Search Behavior
+
+You can add a `search` object to your table options to change the default behavior. The defaults are:
+
+```js
+{
+  search: {
+    caseInsensitive: true,
+    smart: true,
+  }
+}
+```
+
+You can set either of these to `false` if you prefer. See http://datatables.net/reference/option/search
+
+The `regex` option is not yet supported.
+
 ## Using Collection Helpers
 
 The DataTables library supports calling functions on the row data by appending your `data` string with `()`. This can be used along with the `dburles:collection-helpers` package (or your own collection transform). For example:
@@ -261,8 +318,6 @@ TabularTables.People = new Tabular.Table({
 });
 ```
 
-
-
 ## Modifying the Selector
 
 If your table requires the selector to be modified before it's published, you can modify it with the `changeSelector` method. This can be useful for modifying what will be returned in a search. It's called only on the server.
@@ -340,6 +395,16 @@ responsive: true,
 autoWidth: false,
 ```
 
+## Active Datasets
+
+If your table is showing a dataset that changes a lot, it could become unusable due to reactively updating too often. You can throttle how often a table updates with the following table option:
+
+```js
+throttleRefresh: 5000
+```
+
+Set it to the number of milliseconds to wait between updates, even if the data is changing more frequently.
+
 ## Using a Custom Publish Function
 
 This package takes care of publication and subscription for you using two built-in publications. The first publication determines the list of document `_id`s that
@@ -349,11 +414,11 @@ The most common reason to override the second publication with your own custom o
 
 To tell Tabular to use your custom publish function, pass the publication name as the `pub` option. Your function:
 
-* must accept and check three arguments: `tableName`, `ids`, and `fields`
-* must publish all the documents where `_id` is in the `ids` array.
-* should publish only the fields listed in the `fields` object, if one is provided.
-* should do any necessary security checks
-* may also publish other data necessary for your table
+* MUST accept and check three arguments: `tableName`, `ids`, and `fields`
+* MUST publish all the documents where `_id` is in the `ids` array.
+* MUST do any necessary security checks
+* SHOULD publish only the fields listed in the `fields` object, if one is provided.
+* MAY also publish other data necessary for your table
 
 ### Example
 
@@ -467,6 +532,29 @@ By default, the DataTables library uses automatic column width calculations. If 
 ### Turning Off Paging or Showing "All"
 
 When using no paging or an "All" (-1) option in the page limit list, it is best to also add a hard limit in your table options like `limit: 500`, unless you know the collection will always be very small.
+
+### Customize the "Processing" Message
+
+To customize the "Processing" message appearance, use CSS selector `div.dataTables_wrapper div.dataTables_processing`. To change or translate the text, see https://datatables.net/reference/option/language.processing
+
+### I18N Example
+
+Before rendering the table on the client:
+
+
+```js
+if (Meteor.isClient) {
+	$.extend(true, $.fn.dataTable.defaults, {
+		language: {
+      "lengthMenu": i18n("tableDef.lengthMenu"),
+      "zeroRecords": i18n("tableDef.zeroRecords"),
+      "info": i18n("tableDef.info"),
+      "infoEmpty": i18n("tableDef.infoEmpty"),
+      "infoFiltered": i18n("tableDef.infoFiltered")
+    }
+	});
+}
+```
 
 ## Integrating DataTables Extensions
 
