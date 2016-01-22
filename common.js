@@ -27,9 +27,9 @@ Tabular.Table = function (options) {
 
   self.pub = options.pub || 'tabular_genericPub';
 
-  // By default we use core `Meteor.subscribe`, but you can pass
+  // By default we use core `Meteor.subscribe` or `collection._connection`, but you can pass
   // a subscription manager like `sub: new SubsManager({cacheLimit: 20, expireIn: 3})`
-  self.sub = options.sub || Meteor;
+  self.sub = options.sub || options.collection._connection || Meteor;
 
   self.onUnload = options.onUnload;
   self.allow = options.allow;
