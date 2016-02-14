@@ -250,6 +250,63 @@ People.helpers({
 
 Note that for this to work properly, you must ensure that the `firstName` and `lastName` fields are published. If they're included as the `data` for other columns, then there is no problem. If not, you can use the `extraFields` option or your own custom publish function.
 
+
+### Searching Collection Helpers
+#### Example 1
+Lets say you want to only display the hostname of a website, but you have the entire URL in your MongoDB and don't want to create duplicate fields just to allow for searching. Collection helpers make this much easier to show the truncated string, but to search the rendered fields, you need an extra optional argument and class:
+
+```coffee
+  urlRegExp = ['^https?:\\/\\/(?:w{3})?[.]?([^\\/]*)', '[^\\/]*', '[^\\/]*']
+  # ...
+  {
+    data: 'urlParse()'
+    title: 'urlParse()'
+    class: 'url'
+    options: {
+      regex: urlRegExp
+    }
+  }
+  extraFields: ['url']
+  # ...
+  Books.helpers urlParse: ->
+    regex = new RegExp urlRegExp
+    @url.match(regex)[1]
+```
+
+A regular expression can be declared in array format, where: [BegginingRegExp, ElasticSearchExtender, EndRegExp]. So if a query, 'search' was input to the default text box, the table would only show values matching this regexp: /^https?:\/\/(?:w{3})?[.]?([^\/]*)s[^\/]*e[^\/]*a[^\/]*r[^\/]*c[^\/]*h[^\/]*[^\/]*/
+
+To prevent elastic search, leave the second field null. Likewise, to avoid an EndRegExp pushed to the end of the regular expression, leave that value null. options.regex is optional and is only used when needed.
+
+The 'class' value is equally important. The class tells Meteor-Tabular what field to search because it would otherwise attempt to search for urlParse. Class would be the value used if not using a collection helper.
+
+#### Example 1
+Lets say that you now want to display the first name of an author and the first two letters of the authors last name because a full name is too wide.
+```coffee
+  # ...
+  {
+    data: 'fullName()'
+    title: 'fullName()'
+    class: 'firstName lastName'
+    options: {
+      # Multiple RegExp example:
+      regex: [
+        [null]
+        ['^[', null, ']{1,2}', 2]
+      ]
+    }
+  }
+  extraFields: ['firstName', 'lastName']
+  # ...
+  Editors.helpers
+    fullName: ->
+      @firstName+' '+@lastName.match(/\D{2}/)+'.'
+```
+
+In this case, there are two relevant fields to search, so you can submit a space-separated list of fields to search for a match (i.e. search both first and last name for the search: 'tom'). Each field may have its own cooresponding regular expression. To provide regular expressions, make an array of the regex arrays.
+
+#### Additional Examples
+@kyleking will provide additional examples and better documentation for this feature if accepted. For now, check out the [TinyTests file](https://github.com/KyleKing/meteor-tabular/blob/staging/package-tests.js) to see how the [Util Functions](https://github.com/KyleKing/meteor-tabular/blob/staging/client/util.js) work. Or see complete examples at [Kyle's repository](https://github.com/KyleKing/My-Programming-Sketchbook/tree/master/Meteorjs/Meteor%20Tabular%20Examples).
+
 ## Publishing Extra Fields
 
 If your table's templates or helper functions require fields that are not included in the data, you can tell Tabular to publish these fields by including them in the `extraFields` array option:

@@ -47,17 +47,32 @@ tableInit = function tableInit(tabularTable, template) {
       col.defaultContent = "";
     }
 
-    // Build the list of field names we want included
-    var dataProp = col.data;
+    // Find the correct collection to search/sort, for backwards compatibility
+    // Check if a class is set, otherwise revert to default data() attribute
+    // The class value circumvent issues with a data attribute  set as an
+    // instance function (i.e. a collection helper: "()" )
+    if (col.query === undefined) {
+      if (col.class === undefined) {
+        col.query = col.data;
+      } else {
+        col.query = col.class;
+      }
+    }
+    var dataProp = col.query;
+
     if (typeof dataProp === "string") {
-      // If it's referencing an instance function, don't
+      // If after manipulating the dataProp value, the data property
+      // is still referencing an instance function, don't
       // include it. Prevent sorting and searching because
       // our pub function won't be able to do it.
       if (dataProp.indexOf("()") !== -1) {
         col.orderable = false;
         col.searchable = false;
-        return;
       }
+
+      // To prevent searching and sorting, simply set the property,
+      // 'searchable: false' (or sortable) next to the definition
+      // of the 'data: "..." ' field
 
       fields[Util.cleanFieldName(dataProp)] = 1;
 
