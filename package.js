@@ -82,10 +82,10 @@ Package.onTest(function(api) {
   ]);
 
   // Load this first:
-  api.addFiles('test-reusedFunctions.js', 'client');
+  api.addFiles('tests/reusedFunctions.js', 'client');
   api.addFiles([
-    'test-util.js',
-    'test-mongoDBQuery.js',
-    'test-utilIntegration.js'
+    'tests/util.js',
+    'tests/mongoDBQuery.js',
+    'tests/utilIntegration.js'
   ], 'client' );
 });
