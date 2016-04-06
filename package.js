@@ -3,7 +3,7 @@
 Package.describe({
   name: 'aldeed:tabular',
   summary: 'Datatables for large or small datasets in Meteor',
-  version: '1.5.1',
+  version: '1.5.5',
   git: 'https://github.com/aldeed/meteor-tabular.git'
 });
 
@@ -20,7 +20,8 @@ Package.onUse(function(api) {
     'blaze',
     'templating',
     'reactive-var',
-    'tracker'
+    'tracker',
+    'ecmascript'
   ]);
 
   // jquery is a weak reference in case you want to use a different package or
@@ -31,6 +32,7 @@ Package.onUse(function(api) {
   api.use(['meteorhacks:subs-manager@1.2.0'], ['client', 'server'], {weak: true});
 
   api.export('Tabular');
+  api.export('Util', 'client');
 
   api.addFiles('common.js');
   api.addFiles('server/tabular.js', 'server');
@@ -64,4 +66,26 @@ Package.onUse(function(api) {
       'images/sort_desc_disabled.png'
     ], 'client');
   }
+});
+
+// Follow this guide: https://github.com/awatson1978/meteor-cookbook/blob/master/cookbook/writing.unit.tests.md
+Package.onTest(function(api) {
+  // Tiny Test
+  api.use(['aldeed:tabular', 'tinytest']);
+  api.use([
+    'anti:fake',
+    'check',
+    'underscore',
+    'reactive-var',
+    'tracker',
+    'ecmascript'
+  ]);
+
+  // Load this first:
+  api.addFiles('tests/reusedFunctions.js', 'client');
+  api.addFiles([
+    'tests/util.js',
+    'tests/mongoDBQuery.js',
+    'tests/utilIntegration.js'
+  ], 'client' );
 });
