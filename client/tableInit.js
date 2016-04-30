@@ -101,9 +101,38 @@ tableInit = function tableInit(tabularTable, template) {
         return data;
       };
     }
+
+    if (typeof col.titleFn === 'function') {
+      col.title = col.titleFn();
+      col.sTitle = col.titleFn();
+    }
   });
 
   template.tabular.columns = columns;
   template.tabular.fields = fields;
   template.tabular.searchFields = searchFields;
+
+  tableRefreshColTitle(tabularTable, template);
 };
+
+
+tableRefreshColTitle = function tableRefreshColTitle(tabularTable, template) {
+  var columns = _.clone(tabularTable.options.columns);
+
+  _.each(columns, function (col) {
+
+    if (typeof col.titleFn === 'function') {
+      col.title = col.titleFn();
+      col.sTitle = col.titleFn();
+    }
+  });
+
+  $tableElement = template.$('table');
+  var th = $tableElement.find("thead tr th");
+  $.each(th, function(index, t) {
+    $(t).html(columns[index].title);
+  })
+
+  template.tabular.columns = columns;
+};
+
