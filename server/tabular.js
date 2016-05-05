@@ -140,6 +140,8 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
     }
   };
 
+  updateRecords = Meteor.bindEnvironment(updateRecords);
+
   if (table.throttleRefresh) {
     updateRecords = _.throttle(updateRecords, table.throttleRefresh);
   }
