@@ -208,7 +208,28 @@ var tabularOnRendered = function () {
       template.tabular.pubSelector.get(),
       template.tabular.sort.get(),
       template.tabular.skip.get(),
-      template.tabular.limit.get()
+      template.tabular.limit.get(),
+        function() {
+          // this callback is there only to handle a case where a change in pubSelector
+          // doesn't actually get any new rows. This causes the 'processing' indicator 
+          // to be displayed but never hidden
+
+          // most of this code is copy & pasted from other autorun blocks
+          var tableName = Tracker.nonreactive(function () {
+            return template.tabular.tableName.get();
+          });
+
+          var tableInfo = Tabular.getRecord(tableName) || {};
+
+          var collection = template.tabular.collection.get();
+
+          // we only care about the count, so no fields selector
+          // if cursor already has all the records, hide the processing indicator
+          var cursorCount = collection.find({_id: {$in: tableInfo.ids}}).count();
+          if (cursorCount === tableInfo.ids.length) {
+            template.tabular.isLoading.set(false);
+          }
+        }
     );
   });
 
