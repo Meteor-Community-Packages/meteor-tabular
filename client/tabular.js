@@ -116,7 +116,7 @@ var tabularOnRendered = function () {
 
   // Reactively determine table columns, fields, and searchFields.
   // This will rerun whenever the current template data changes.
-  var lastTableName;
+  var lastTable;
   template.autorun(function () {
     var data = Template.currentData();
 
@@ -139,7 +139,7 @@ var tabularOnRendered = function () {
     // attribute. If we didn't change it, we can stop here,
     // but we need to reload the table if this is not the first
     // run
-    if (tabularTable.name === lastTableName) {
+    if (tabularTable === lastTable) {
       if (table) {
         // passing `false` as the second arg tells it to
         // reset the paging
@@ -150,15 +150,14 @@ var tabularOnRendered = function () {
 
     // If we reactively changed the `table` attribute, run
     // onUnload for the previous table
-    if (lastTableName !== undefined) {
-      var lastTableDef = Tabular.tablesByName[lastTableName];
-      if (lastTableDef && typeof lastTableDef.onUnload === 'function') {
-        lastTableDef.onUnload();
+    if (lastTable !== undefined) {
+      if (lastTable && typeof lastTable.onUnload === 'function') {
+        lastTable.onUnload();
       }
     }
 
-    // Cache this table name as the last table name for next run
-    lastTableName = tabularTable.name;
+    // Cache this table object for next run
+    lastTable = tabularTable;
 
     // Figure out and update the columns, fields, and searchFields
     tableInit(tabularTable, template);
