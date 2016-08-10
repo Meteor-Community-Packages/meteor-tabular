@@ -48,9 +48,6 @@ var tabularOnRendered = function () {
       // the first subscription, which will then trigger the
       // second subscription.
 
-      template.tabular.isLoading.set(true);
-      //console.log('data', template.tabular.data);
-
       // Update skip
       template.tabular.skip.set(data.start);
       Session.set('Tabular.LastSkip', data.start);
@@ -188,6 +185,18 @@ var tabularOnRendered = function () {
     }
   });
 
+  template.autorun(function () {
+    // these 5 are the parameters passed to "tabular_getInfo" subscription
+    // so when they *change*, set the isLoading flag to true
+    template.tabular.tableName.get();
+    template.tabular.pubSelector.get();
+    template.tabular.sort.get();
+    template.tabular.skip.get();
+    template.tabular.limit.get();
+
+    template.tabular.isLoading.set(true);
+  });
+
   // First Subscription
   // Subscribe to an array of _ids that should be on the
   // current page of the table, plus some aggregate
@@ -211,7 +220,7 @@ var tabularOnRendered = function () {
       template.tabular.limit.get(),
         function() {
           // this callback is there only to handle a case where a change in pubSelector
-          // doesn't actually get any new rows. This causes the 'processing' indicator 
+          // doesn't actually get any new rows. This causes the 'processing' indicator
           // to be displayed but never hidden
 
           // most of this code is copy & pasted from other autorun blocks
