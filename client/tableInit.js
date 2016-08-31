@@ -33,7 +33,7 @@ tableInit = function tableInit(tabularTable, template) {
           rowData = col.tmplContext(rowData);
         }
 
-        Blaze.renderWithData(tmpl, rowData, cell);
+        Blaze.renderWithData(tmpl, rowData, cell, undefined, template.view);
       };
 
       // Then delete the `tmpl` property since DataTables
