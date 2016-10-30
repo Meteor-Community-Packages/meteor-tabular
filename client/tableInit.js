@@ -14,7 +14,9 @@ function tableInit(tabularTable, template) {
   // Loop through the provided columns object
   let columns = tabularTable.options.columns || [];
   columns = columns.map(column => {
-    let options = templateColumnOptions(column);
+    let options = { ...column };
+
+    _.extend(options, templateColumnOptions(column));
 
     // `templateColumnOptions` might have set defaultContent option. If not, we need it set
     // to something to protect against errors from null and undefined values.
@@ -23,7 +25,6 @@ function tableInit(tabularTable, template) {
     }
 
     _.extend(options, searchAndOrderOptions(column));
-    _.extend(options, titleOptions(column));
 
     // Build the list of field names we want included in the publication and in the searching
     const data = column.data;
@@ -42,12 +43,14 @@ function tableInit(tabularTable, template) {
   template.tabular.columns = columns;
   template.tabular.fields = fields;
   template.tabular.searchFields = searchFields;
+
+  return columns;
 };
 
 // The `tmpl` column option is special for this package. We parse it into other column options
 // and then remove it.
-function templateColumnOptions(column) {
-  if (!column.tmpl) return {};
+function templateColumnOptions({ data, render, tmpl, tmplContext }) {
+  if (!tmpl) return {};
 
   const options = {};
 
@@ -58,8 +61,8 @@ function templateColumnOptions(column) {
   // the provided template with row data.
   options.createdCell = (cell, cellData, rowData) => {
     // Allow the table to adjust the template context if desired
-    if (typeof column.tmplContext === 'function') {
-      rowData = column.tmplContext(rowData);
+    if (typeof tmplContext === 'function') {
+      rowData = tmplContext(rowData);
     }
 
     Blaze.renderWithData(tmpl, rowData, cell);
@@ -70,7 +73,7 @@ function templateColumnOptions(column) {
   // However, DataTables will then add that data to the displayed cell, which we don't want since
   // we're rendering a template there with Blaze. We can prevent this issue by having the "render"
   // function return an empty string for display content.
-  if (column.data && !column.render) {
+  if (data && !render) {
     options.render = (data, type) => (type === 'display') ? '' : data;
   }
 
@@ -90,12 +93,6 @@ function searchAndOrderOptions(column) {
     return { orderable: false, searchable: column.searchable };
   }
   return { orderable: column.orderable, searchable: column.searchable };
-}
-
-function titleOptions(column) {
-  if (typeof column.titleFn !== 'function') return {};
-  const title = column.titleFn();
-  return { title };
 }
 
 export default tableInit;

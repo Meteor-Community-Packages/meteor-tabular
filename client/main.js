@@ -145,6 +145,22 @@ Template.tabular.onRendered(function () {
             }
           });
       }
+    },
+    headerCallback(headerRow) {
+      const options = template.tabular.options.get();
+      const columns = options.columns;
+
+      $(headerRow).find('td,th').each((index, headerCell) => {
+        const titleFunction = columns[index].titleFn;
+        if (typeof titleFunction === 'function') {
+          headerCell.innerHTML = '';
+          if (headerCell.__blazeViewInstance) {
+            Blaze.remove(headerCell.__blazeViewInstance);
+          }
+          const view = new Blaze.View(titleFunction);
+          headerCell.__blazeViewInstance = Blaze.render(view, headerCell);
+        }
+      });
     }
   };
 
@@ -198,7 +214,7 @@ Template.tabular.onRendered(function () {
     lastTableName = tabularTable.name;
 
     // Figure out and update the columns, fields, and searchFields
-    tableInit(tabularTable, template);
+    const columns = tableInit(tabularTable, template);
 
     // Set/update everything else
     template.tabular.searchCaseInsensitive = true;
@@ -212,7 +228,10 @@ Template.tabular.onRendered(function () {
         template.tabular.splitSearchByWhitespace = false;
       }
     }
-    template.tabular.options.set(tabularTable.options);
+    template.tabular.options.set({
+      ...tabularTable.options,
+      columns,
+    });
     template.tabular.tableName.set(tabularTable.name);
     template.tabular.docPub.set(tabularTable.pub);
     template.tabular.collection.set(tabularTable.collection);
@@ -301,7 +320,7 @@ Template.tabular.onRendered(function () {
     const userOptions = template.tabular.options.get();
     const options = _.extend({}, ajaxOptions, userOptions);
 
-    //console.log('userOptions autorun', options);
+    //console.log('userOptions autorun', userOptions);
 
     // unless the user provides her own displayStart,
     // we use a value from Session. This keeps the

@@ -504,6 +504,10 @@ if (Meteor.isClient) {
 }
 ```
 
+### Reactive Column Titles
+
+You can set the `titleFn` column option to a function instead of supplying a string `title` option. This is reactively rerun as necessary.
+
 ## Integrating DataTables Extensions
 
 There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables.
