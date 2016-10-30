@@ -17,12 +17,9 @@ Template.registerHelper('TabularTables', Tabular.tablesByName);
 Tabular.tableRecords = new Mongo.Collection('tabular_records');
 Tabular.remoteTableRecords = [];
 
-Tabular.getRecord = function (name, collection) {
-  if (collection && collection._connection) return Tabular.getRemoteRecord(name, collection._connection);
-  return Tabular.tableRecords.findOne(name);
-};
+Tabular.getTableRecordsCollection = function (connection) {
+  if (!connection || connection === Tabular.tableRecords._connection) return Tabular.tableRecords;
 
-Tabular.getRemoteRecord = function (name, connection) {
   let remote = _.find(Tabular.remoteTableRecords, remote => remote.connection === connection);
   if (!remote) {
     remote = {
@@ -31,7 +28,11 @@ Tabular.getRemoteRecord = function (name, connection) {
     };
     Tabular.remoteTableRecords.push(remote);
   }
-  return remote.tableRecords.findOne(name);
+  return remote.tableRecords;
+};
+
+Tabular.getRecord = function (name, collection) {
+  return Tabular.getTableRecordsCollection(collection._connection).findOne(name);
 };
 
 Template.tabular.helpers({
