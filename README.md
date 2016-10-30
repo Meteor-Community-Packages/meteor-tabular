@@ -44,6 +44,15 @@ A Meteor package that creates reactive [DataTables](http://datatables.net/) in a
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## ATTENTION: Updating to 2.0
+
+Version 2.0 API is backwards compatible other than the following changes:
+- Requires Meteor 1.3+
+- You must explicitly import the `Tabular` object into every file where you use it. (`import Tabular from 'meteor/aldeed:tabular';`)
+- You must configure the Bootstrap theme (or whatever theme you want) yourself. See [Installing and Configuring a Theme](#installing-and-configuring-a-theme)
+
+This version also includes a few fixes and a few new features.
+
 ## Features
 
 * Fast: Uses an intelligent automatic data subscription so that table data is not loaded until it's needed.

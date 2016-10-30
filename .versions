@@ -1,5 +1,6 @@
-aldeed:tabular@1.6.1
+aldeed:tabular@2.0.0
 allow-deny@1.0.3
+anti:fake@0.4.1
 babel-compiler@6.6.1
 babel-runtime@0.1.7
 base64@1.0.7
@@ -25,6 +26,7 @@ html-tools@1.0.8
 htmljs@1.0.8
 id-map@1.0.6
 jquery@1.11.7
+local-test:aldeed:tabular@2.0.0
 logging@1.0.11
 meteor@1.1.13
 minifier-js@1.1.10
@@ -38,13 +40,16 @@ observe-sequence@1.0.10
 ordered-dict@1.0.6
 promise@0.6.6
 random@1.0.8
+reactive-dict@1.1.6
 reactive-var@1.0.8
 retry@1.0.6
 routepolicy@1.0.9
+session@1.1.4
 spacebars@1.0.10
 spacebars-compiler@1.0.10
 templating@1.1.8
 templating-tools@1.0.3
+tinytest@1.0.9
 tracker@1.0.12
 ui@1.0.10
 underscore@1.0.7
