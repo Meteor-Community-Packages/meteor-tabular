@@ -529,6 +529,8 @@ if (Meteor.isClient) {
 }
 ```
 
+More options to translate can be found here: https://datatables.net/reference/option/language
+
 ### Reactive Column Titles
 
 You can set the `titleFn` column option to a function instead of supplying a string `title` option. This is reactively rerun as necessary.
