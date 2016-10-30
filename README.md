@@ -11,6 +11,7 @@ A Meteor package that creates reactive [DataTables](http://datatables.net/) in a
 
 - [Features](#features)
 - [Installation](#installation)
+- [Installing and Configuring a Theme](#installing-and-configuring-a-theme)
 - [Online Demo App](#online-demo-app)
 - [Example](#example)
 - [Displaying Only Part of a Collection's Data Set](#displaying-only-part-of-a-collections-data-set)
@@ -37,6 +38,7 @@ A Meteor package that creates reactive [DataTables](http://datatables.net/) in a
   - [Turning Off Paging or Showing "All"](#turning-off-paging-or-showing-all)
   - [Customize the "Processing" Message](#customize-the-processing-message)
   - [I18N Example](#i18n-example)
+  - [Reactive Column Titles](#reactive-column-titles)
 - [Integrating DataTables Extensions](#integrating-datatables-extensions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -62,7 +64,9 @@ Although this appears similar to the [jquery-datatables](https://github.com/Luma
 $ meteor add aldeed:tabular
 ```
 
-## Installing and Enabling the Bootstrap Theme
+## Installing and Configuring a Theme
+
+This example is for the Bootstrap theme. You can use another theme package. See https://datatables.net/download/npm
 
 First:
 
