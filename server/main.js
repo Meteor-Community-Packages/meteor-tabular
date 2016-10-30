@@ -138,7 +138,8 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   }
 
   if (table.throttleRefresh) {
-    updateRecords = _.throttle(updateRecords, table.throttleRefresh);
+    // Why Meteor.bindEnvironment? See https://github.com/aldeed/meteor-tabular/issues/278#issuecomment-217318112
+    updateRecords = _.throttle(Meteor.bindEnvironment(updateRecords), table.throttleRefresh);
   }
 
   updateRecords();
