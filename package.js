@@ -20,7 +20,8 @@ Package.onUse(function(api) {
     'blaze',
     'templating',
     'reactive-var',
-    'tracker'
+    'tracker',
+    'session'
   ]);
 
   // jquery is a weak reference in case you want to use a different package or
