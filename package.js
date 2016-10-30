@@ -3,7 +3,7 @@
 Package.describe({
   name: 'aldeed:tabular',
   summary: 'Datatables for large or small datasets in Meteor',
-  version: '2.0.0',
+  version: '2.0.1',
   git: 'https://github.com/aldeed/meteor-tabular.git'
 });
 
