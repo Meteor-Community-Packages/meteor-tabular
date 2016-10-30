@@ -71,8 +71,10 @@ This example is for the Bootstrap theme. You can use another theme package. See 
 First:
 
 ```bash
-$ npm install --save datatables.net-bs
+$ npm install --save jquery@1.11.2 datatables.net-bs
 ```
+
+Note that we install jquery@1.11.2. This needs to match the current version of jQuery included with Meteor's `jquery` package. (See the version comment in https://github.com/meteor/meteor/blob/master/packages/jquery/package.js) Otherwise, due to the `datatables.net` package depending on `jquery` NPM package, it might automatically install the latest `jquery` version, which may conflict with Bootstrap or Meteor.
 
 Then, somewhere in your client JavaScript:
 
