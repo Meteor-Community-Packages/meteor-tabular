@@ -54,12 +54,29 @@ Although this appears similar to the [jquery-datatables](https://github.com/Luma
 * This package has a much smaller codebase and includes less of the DataTables library.
 * This package allows you to specify a Spacebars template as a cell's content.
 * This package handles the reactive table updates in a different way.
-* This package is designed to work with Twitter Bootstrap 3
+* This package is designed to work with the Twitter Bootstrap 3 DataTables theme
 
 ## Installation
 
 ```bash
 $ meteor add aldeed:tabular
+```
+
+## Installing and Enabling the Bootstrap Theme
+
+First:
+
+```bash
+$ npm install --save datatables.net-bs
+```
+
+Then, somewhere in your client JavaScript:
+
+```js
+import { $ } from 'meteor/jquery';
+import dataTablesBootstrap from 'datatables.net-bs';
+import 'datatables.net-bs/css/dataTables.bootstrap.css';
+dataTablesBootstrap(window, $);
 ```
 
 ## Online Demo App
@@ -72,12 +89,16 @@ Another example app courtesy of @AnnotatedJS:
 
 ## Example
 
-Define your table in common code:
+Define your table in common code (code that runs in both NodeJS and browser):
 
 ```js
-TabularTables = {};
+import Tabular from 'meteor/aldeed:tabular';
+import { Template } from 'meteor/templating';
+import moment from 'moment';
+import { Meteor } from 'meteor/meteor';
+import { Books } from './collections/Books';
 
-TabularTables.Books = new Tabular.Table({
+new Tabular.Table({
   name: "Books",
   collection: Books,
   columns: [
@@ -121,7 +142,7 @@ Add a [Mongo-style selector](https://docs.meteor.com/#/full/selectors) to your `
 
 ```js
 Template.myTemplate.helpers({
-  selector: function () {
+  selector() {
     return {author: "Agatha Christie"}; // this could be pulled from a Session var or something that is reactive
   }
 });
@@ -130,10 +151,10 @@ Template.myTemplate.helpers({
 If you want to limit what is published to the client for security reasons you can provide a selector in the constructor which will be used by the publications. Selectors provided this way will be combined with selectors provided to the template using an AND relationship. Both selectors may query on the same fields if necessary.
 
 ```js
-TabularTables.Books = new Tabular.Table({
+new Tabular.Table({
   // other properties...
-  selector: function( userId ) {
-    return { documentOwner: userId }
+  selector(userId) {
+    return { documentOwner: userId };
   }
 });
 ```
@@ -145,9 +166,9 @@ The [DataTables documentation](http://datatables.net/reference/option/) lists a 
 Example:
 
 ```js
-TabularTables.Books = new Tabular.Table({
+new Tabular.Table({
   // other properties...
-  createdRow: function( row, data, dataIndex ) {
+  createdRow( row, data, dataIndex ) {
     // set row class based on row data
   }
 });
@@ -172,7 +193,7 @@ In your template and helpers, `this` is set to the document for the current row 
   data: 'title',
   title: "Title",
   tmpl: Meteor.isClient && Template.sharedTemplate,
-  tmplContext: function (rowData) {
+  tmplContext(rowData) {
     return {
       item: rowData,
       column: 'title'
@@ -273,7 +294,7 @@ If your table requires the selector to be modified before it's published, you ca
 ```js
 TabularTables.Posts = new Tabular.Table({
   // other properties...
-  changeSelector: function(selector, userId) {
+  changeSelector(selector, userId) {
     // modify it here ...
     return selector;
   }
@@ -304,10 +325,10 @@ You can optionally provide an `allow` and/or `allowFields` function to control w
 ```js
 TabularTables.Books = new Tabular.Table({
   // other properties...
-  allow: function (userId) {
+  allow(userId) {
     return false; // don't allow this person to subscribe to the data
   },
-  allowFields: function (userId, fields) {
+  allowFields(userId, fields) {
     return false; // don't allow this person to subscribe to the data
   }
 });
@@ -412,7 +433,7 @@ Meteor.publishComposite("tabular_AppFeedback", function (tableName, ids, fields)
 // Define an email helper on AppFeedback documents using dburles:collection-helpers package.
 // We'll reference this in our table columns with "email()"
 AppFeedback.helpers({
-  email: function () {
+  email() {
     var user = Meteor.users.findOne({_id: this.userId});
     return user && user.emails[0].address;
   }
@@ -426,7 +447,7 @@ TabularTables.AppFeedback = new Tabular.Table({
   name: "AppFeedback",
   collection: AppFeedback,
   pub: "tabular_AppFeedback",
-  allow: function (userId) {
+  allow(userId) {
     // check for admin role with alanning:roles package
     return Roles.userIsInRole(userId, 'admin');
   },
