@@ -85,7 +85,6 @@ Template.tabular.onRendered(function () {
       // the first subscription, which will then trigger the
       // second subscription.
 
-      template.tabular.isLoading.set(true);
       //console.log('data', template.tabular.data);
 
       // Update skip
@@ -247,6 +246,17 @@ Template.tabular.onRendered(function () {
     }
   });
 
+  template.autorun(() => {
+    // these 5 are the parameters passed to "tabular_getInfo" subscription
+    // so when they *change*, set the isLoading flag to true
+    template.tabular.tableName.get();
+    template.tabular.pubSelector.get();
+    template.tabular.sort.get();
+    template.tabular.skip.get();
+    template.tabular.limit.get();
+    template.tabular.isLoading.set(true);
+  });
+
   // First Subscription
   // Subscribe to an array of _ids that should be on the
   // current page of the table, plus some aggregate
@@ -259,6 +269,10 @@ Template.tabular.onRendered(function () {
 
     //console.log('tabular_getInfo autorun');
 
+    function onReady() {
+      template.tabular.isLoading.set(false);
+    }
+
     var connection = template.tabular.connection;
     var context = connection || Meteor;
     context.subscribe(
@@ -267,7 +281,8 @@ Template.tabular.onRendered(function () {
       template.tabular.pubSelector.get(),
       template.tabular.sort.get(),
       template.tabular.skip.get(),
-      template.tabular.limit.get()
+      template.tabular.limit.get(),
+      onReady,
     );
   });
 
