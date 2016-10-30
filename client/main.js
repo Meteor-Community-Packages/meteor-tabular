@@ -474,6 +474,13 @@ Template.tabular.onDestroyed(function () {
       typeof this.tabular.tableDef.onUnload === 'function') {
     this.tabular.tableDef.onUnload();
   }
+
+  // Destroy the DataTable instance to avoid memory leak
+  const table = this.$('table');
+  if (table.length) {
+    const dt = table.DataTable();
+    if (dt) dt.destroy();
+  }
 });
 
 //function setUpTestingAutoRunLogging(template) {
