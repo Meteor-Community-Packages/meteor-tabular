@@ -13,7 +13,7 @@ function getPubSelector(
   // if search was invoked via .columns().search(), build a query off that
   // https://datatables.net/reference/api/columns().search()
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  const searchColumns = _.filter(columns, column => {
+  let searchColumns = _.filter(columns, column => {
     return column.search && column.search.value !== '';
   });
 
@@ -22,25 +22,43 @@ function getPubSelector(
     return selector;
   }
 
+  if (searchColumns.length === 0) {
+    // normalize search fields array to mirror the structure
+    // as passed by the datatables ajax.data function
+    searchColumns = _.map(searchFields, field => {
+      return {
+        data: field,
+        search: {
+          value: searchString
+        }
+      };
+    });
+  }
+
+  return createMongoSearchQuery(
+    selector,
+    searchString,
+    searchColumns,
+    searchCaseInsensitive,
+    splitSearchByWhitespace,
+    columns,
+  );
+}
+
+function createMongoSearchQuery(
+  selector,
+  searchString,
+  searchColumns,
+  searchCaseInsensitive,
+  splitSearchByWhitespace,
+  columns,
+) {
   // See if we can resolve the search string to a number,
   // in which case we use an extra query because $regex
   // matches string fields only.
   const searches = [];
 
-  // normalize search fields array to mirror the structure
-  // as passed by the datatables ajax.data function
-  searchFields = _.map(searchFields, function(field) {
-    return {
-      data: field,
-      search: {
-        value: searchString
-      }
-    };
-  });
-
-  const searchTerms = _.isEmpty(searchColumns) ? searchFields : searchColumns;
-
-  _.each(searchTerms, field => {
+  _.each(searchColumns, field => {
     let searchValue = field.search.value || '';
 
     // Split and OR by whitespace, as per default DataTables search behavior
@@ -50,7 +68,7 @@ function getPubSelector(
       searchValue = [searchValue];
     }
 
-    _.each(searchValue, function (searchTerm) {
+    _.each(searchValue, searchTerm => {
       const m1 = {};
       const m2 = {};
 
@@ -74,7 +92,7 @@ function getPubSelector(
   });
 
   let result;
-  if (selector) {
+  if (typeof selector === 'object' && selector !== null) {
     result = {$and: [selector, {$or: searches}]};
   } else {
     result = {$or: searches};

@@ -15,8 +15,24 @@ dataTableInit(window, $);
 Template.registerHelper('TabularTables', Tabular.tablesByName);
 
 Tabular.tableRecords = new Mongo.Collection('tabular_records');
+Tabular.remoteTableRecords = [];
 
-Tabular.getRecord = name => Tabular.tableRecords.findOne(name);
+Tabular.getRecord = function (name, collection) {
+  if (collection && collection._connection) return Tabular.getRemoteRecord(name, collection._connection);
+  return Tabular.tableRecords.findOne(name);
+};
+
+Tabular.getRemoteRecord = function (name, connection) {
+  let remote = _.find(Tabular.remoteTableRecords, remote => remote.connection === connection);
+  if (!remote) {
+    remote = {
+      connection,
+      tableRecords: new Mongo.Collection('tabular_records', { connection }),
+    };
+    Tabular.remoteTableRecords.push(remote);
+  }
+  return remote.tableRecords.findOne(name);
+};
 
 Template.tabular.helpers({
   atts() {
@@ -47,6 +63,7 @@ Template.tabular.onRendered(function () {
   template.tabular.options = new ReactiveVar({}, objectsAreEqual);
   template.tabular.docPub = new ReactiveVar(null);
   template.tabular.collection = new ReactiveVar(null);
+  template.tabular.connection = null;
   template.tabular.ready = new ReactiveVar(false);
   template.tabular.recordsTotal = 0;
   template.tabular.recordsFiltered = 0;
@@ -198,6 +215,9 @@ Template.tabular.onRendered(function () {
     template.tabular.tableName.set(tabularTable.name);
     template.tabular.docPub.set(tabularTable.pub);
     template.tabular.collection.set(tabularTable.collection);
+    if (tabularTable.collection && tabularTable.collection._connection) {
+      template.tabular.connection = tabularTable.collection._connection;
+    }
 
     // userOptions rerun should do this?
     if (table) {
@@ -219,7 +239,9 @@ Template.tabular.onRendered(function () {
 
     //console.log('tabular_getInfo autorun');
 
-    Meteor.subscribe(
+    var connection = template.tabular.connection;
+    var context = connection || Meteor;
+    context.subscribe(
       "tabular_getInfo",
       template.tabular.tableName.get(),
       template.tabular.pubSelector.get(),
@@ -239,7 +261,8 @@ Template.tabular.onRendered(function () {
     // It does not cause reruns based on the documents themselves
     // changing.
     var tableName = template.tabular.tableName.get();
-    var tableInfo = Tabular.getRecord(tableName) || {};
+    var collection = template.tabular.collection.get();
+    var tableInfo = Tabular.getRecord(tableName, collection) || {};
 
     //console.log('tableName and tableInfo autorun', tableName, tableInfo);
 
@@ -323,7 +346,7 @@ Template.tabular.onRendered(function () {
     // * `selector` attribute changed reactively
     // * Docs were added/changed/removed by this user or
     //   another user, causing visible result set to change.
-    var tableInfo = Tabular.getRecord(tableName);
+    var tableInfo = Tabular.getRecord(tableName, collection);
 
     if (!collection || !tableInfo) return;
 

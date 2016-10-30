@@ -13,6 +13,10 @@ export function cleanFieldName(field) {
 }
 
 export function cleanFieldNameForSearch(field) {
+  // Check if object has ["foo"]
+  if (field.indexOf('\"') !== -1) {
+    console.warn(`The column data value '${field}' contains a " character and will not be properly parsed for enabling search`);
+  }
   // If it's referencing an array, replace the brackets
   // This will only work with an object which doesn't have ["foo"]
   return field.replace(/\[\w+\]/, "");
@@ -45,11 +49,9 @@ export function getMongoSort(order, columns) {
   _.each(order, function (ord) {
     const propName = columns[ord.column].data;
     const orderable = columns[ord.column].orderable;
-    console.log(propName, orderable, ord, columns);
     if (typeof propName === 'string' && orderable !== false) {
       sort.push([propName, ord.dir]);
     }
   });
-  console.log('sort', sort);
   return sort;
 };

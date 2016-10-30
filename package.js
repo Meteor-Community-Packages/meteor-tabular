@@ -46,3 +46,24 @@ Package.onUse(function(api) {
     'images/sort_desc_disabled.png'
   ], 'client');
 });
+
+Package.onTest(function(api) {
+  // Tiny Test
+  api.use(['aldeed:tabular', 'tinytest']);
+  api.use([
+    'anti:fake',
+    'check',
+    'underscore',
+    'reactive-var',
+    'tracker',
+    'ecmascript'
+  ]);
+
+  // Load this first:
+  api.addFiles('tests/reusedFunctions.js', 'client');
+  api.addFiles([
+    'tests/util.js',
+    'tests/mongoDBQuery.js',
+    'tests/utilIntegration.js'
+  ], 'client' );
+});
