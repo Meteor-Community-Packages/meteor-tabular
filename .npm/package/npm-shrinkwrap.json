@@ -1,12 +1,14 @@
 {
   "dependencies": {
-    "datatables": {
-      "version": "1.10.9",
-      "dependencies": {
-        "jquery": {
-          "version": "2.1.4"
-        }
-      }
+    "datatables.net": {
+      "version": "1.10.12",
+      "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-1.10.12.tgz",
+      "from": "datatables.net@1.10.12"
+    },
+    "jquery": {
+      "version": "3.1.1",
+      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.1.1.tgz",
+      "from": "jquery@>=1.7.0"
     }
   }
 }

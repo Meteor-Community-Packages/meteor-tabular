@@ -8,13 +8,14 @@ Package.describe({
 });
 
 Npm.depends({
-  datatables: '1.10.9'
+  'datatables.net': '1.10.12'
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom(['METEOR@0.9.4', 'METEOR@1.0']);
+  api.versionsFrom(['METEOR@1.3']);
   api.use([
     'check',
+    'ecmascript',
     'underscore',
     'mongo',
     'blaze',
@@ -31,38 +32,17 @@ Package.onUse(function(api) {
 
   api.use(['meteorhacks:subs-manager@1.2.0'], ['client', 'server'], {weak: true});
 
+  api.mainModule('server/main.js', 'server');
+  api.mainModule('client/main.js', 'client');
+
   api.export('Tabular');
 
-  api.addFiles('common.js');
-  api.addFiles('server/tabular.js', 'server');
-  api.addFiles([
-    '.npm/package/node_modules/datatables/media/js/jquery.dataTables.js',
-    'client/lib/dataTables.bootstrap.js',
-    'client/lib/dataTables.bootstrap.css',
-    'client/tabular.html',
-    'client/util.js',
-    'client/tableRecords.js',
-    'client/tableInit.js',
-    'client/pubSelector.js',
-    'client/tabular.js'
-  ], 'client');
-
   // images
-  if (typeof api.addAssets === 'function') {
-    api.addAssets([
-      'images/sort_asc.png',
-      'images/sort_asc_disabled.png',
-      'images/sort_both.png',
-      'images/sort_desc.png',
-      'images/sort_desc_disabled.png'
-    ], 'client');
-  } else {
-    api.addFiles([
-      'images/sort_asc.png',
-      'images/sort_asc_disabled.png',
-      'images/sort_both.png',
-      'images/sort_desc.png',
-      'images/sort_desc_disabled.png'
-    ], 'client');
-  }
+  api.addAssets([
+    'images/sort_asc.png',
+    'images/sort_asc_disabled.png',
+    'images/sort_both.png',
+    'images/sort_desc.png',
+    'images/sort_desc_disabled.png'
+  ], 'client');
 });

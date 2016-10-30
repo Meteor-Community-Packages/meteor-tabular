@@ -1,6 +1,6 @@
-/* global getPubSelector:true, _ */
+import { _ } from 'meteor/underscore';
 
-getPubSelector = function getPubSelector(
+function getPubSelector(
     selector,
     searchString,
     searchFields,
@@ -13,7 +13,7 @@ getPubSelector = function getPubSelector(
   // if search was invoked via .columns().search(), build a query off that
   // https://datatables.net/reference/api/columns().search()
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  var searchColumns = _.filter(columns, function(column) {
+  const searchColumns = _.filter(columns, column => {
     return column.search && column.search.value !== '';
   });
 
@@ -25,7 +25,7 @@ getPubSelector = function getPubSelector(
   // See if we can resolve the search string to a number,
   // in which case we use an extra query because $regex
   // matches string fields only.
-  var searches = [];
+  const searches = [];
 
   // normalize search fields array to mirror the structure
   // as passed by the datatables ajax.data function
@@ -38,10 +38,10 @@ getPubSelector = function getPubSelector(
     };
   });
 
-  var searchTerms = _.isEmpty(searchColumns) ? searchFields : searchColumns;
+  const searchTerms = _.isEmpty(searchColumns) ? searchFields : searchColumns;
 
-  _.each(searchTerms, function(field) {
-    var searchValue = field.search.value || '';
+  _.each(searchTerms, field => {
+    let searchValue = field.search.value || '';
 
     // Split and OR by whitespace, as per default DataTables search behavior
     if (splitSearchByWhitespace) {
@@ -51,20 +51,21 @@ getPubSelector = function getPubSelector(
     }
 
     _.each(searchValue, function (searchTerm) {
-      var m1 = {}, m2 = {};
+      const m1 = {};
+      const m2 = {};
 
       // String search
       m1[field.data] = { $regex: searchTerm };
 
       // DataTables searches are case insensitive by default
       if (searchCaseInsensitive !== false) {
-        m1[field.data].$options = "i";
+        m1[field.data].$options = 'i';
       }
 
       searches.push(m1);
 
       // Number search
-      var numSearchString = Number(searchTerm);
+      const numSearchString = Number(searchTerm);
       if (!isNaN(numSearchString)) {
         m2[field.data] = numSearchString;
         searches.push(m2);
@@ -72,7 +73,7 @@ getPubSelector = function getPubSelector(
     });
   });
 
-  var result;
+  let result;
   if (selector) {
     result = {$and: [selector, {$or: searches}]};
   } else {
@@ -80,4 +81,6 @@ getPubSelector = function getPubSelector(
   }
 
   return result;
-};
+}
+
+export default getPubSelector;

@@ -1,31 +1,50 @@
-/* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, tableInit, getPubSelector, Util */
+/* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, */
+import { $ } from 'meteor/jquery';
+import dataTableInit from 'datatables.net';
+import { Mongo } from 'meteor/mongo';
+import { Template } from 'meteor/templating';
+import Tabular from '../common/Tabular';
+import tableInit from './tableInit';
+import getPubSelector from './getPubSelector';
+import { getMongoSort, objectsAreEqual, sortsAreEqual } from './util';
+
+import './tabular.html';
+
+dataTableInit(window, $);
+
+Template.registerHelper('TabularTables', Tabular.tablesByName);
+
+Tabular.tableRecords = new Mongo.Collection('tabular_records');
+
+Tabular.getRecord = name => Tabular.tableRecords.findOne(name);
 
 Template.tabular.helpers({
-  atts: function () {
+  atts() {
     // We remove the "table" and "selector" attributes and assume the rest belong
     // on the <table> element
-    return _.omit(this, "table", "selector");
+    return _.omit(this, 'table', 'selector');
   }
 });
 
-var tabularOnRendered = function () {
-  var template = this,
-      table, resetTablePaging = false,
-      $tableElement = template.$('table');
+Template.tabular.onRendered(function () {
+  const template = this;
+  const $tableElement = template.$('table');
+  let table;
+  let resetTablePaging = false;
 
   template.tabular = {};
   template.tabular.data = [];
-  template.tabular.pubSelector = new ReactiveVar({}, Util.objectsAreEqual);
+  template.tabular.pubSelector = new ReactiveVar({}, objectsAreEqual);
   template.tabular.skip = new ReactiveVar(0);
   template.tabular.limit = new ReactiveVar(10);
-  template.tabular.sort = new ReactiveVar(null, Util.sortsAreEqual);
+  template.tabular.sort = new ReactiveVar(null, sortsAreEqual);
   template.tabular.columns = null;
   template.tabular.fields = null;
   template.tabular.searchFields = null;
   template.tabular.searchCaseInsensitive = true;
   template.tabular.splitSearchByWhitespace = true;
   template.tabular.tableName = new ReactiveVar(null);
-  template.tabular.options = new ReactiveVar({}, Util.objectsAreEqual);
+  template.tabular.options = new ReactiveVar({}, objectsAreEqual);
   template.tabular.docPub = new ReactiveVar(null);
   template.tabular.collection = new ReactiveVar(null);
   template.tabular.ready = new ReactiveVar(false);
@@ -35,7 +54,7 @@ var tabularOnRendered = function () {
 
   // These are some DataTables options that we need for everything to work.
   // We add them to the options specified by the user.
-  var ajaxOptions = {
+  const ajaxOptions = {
     // tell DataTables that we're getting the table data from a server
     serverSide: true,
     processing: true,
@@ -70,9 +89,9 @@ var tabularOnRendered = function () {
       }
 
       // Update sort
-      template.tabular.sort.set(Util.getMongoSort(data.order, template.tabular.columns));
+      template.tabular.sort.set(getMongoSort(data.order, options.columns));
       // Update pubSelector
-      var pubSelector = getPubSelector(
+      const pubSelector = getPubSelector(
         template.tabular.selector,
         (data.search && data.search.value) || null,
         template.tabular.searchFields,
@@ -122,7 +141,7 @@ var tabularOnRendered = function () {
 
     //console.log('currentData autorun', data);
 
-    if (!data) {return;}
+    if (!data) return;
 
     // We get the current TabularTable instance, and cache it on the
     // template instance for access elsewhere
@@ -196,9 +215,7 @@ var tabularOnRendered = function () {
   // It's not necessary to call stop
   // on subscriptions that are within autorun computations.
   template.autorun(function () {
-    if (!template.tabular.ready.get()) {
-      return;
-    }
+    if (!template.tabular.ready.get()) return;
 
     //console.log('tabular_getInfo autorun');
 
@@ -256,9 +273,9 @@ var tabularOnRendered = function () {
   // Build the table. We rerun this only when the table
   // options specified by the user changes, which should be
   // only when the `table` attribute changes reactively.
-  template.autorun(function (c) {
-    var userOptions = template.tabular.options.get();
-    var options = _.extend({}, ajaxOptions, userOptions);
+  template.autorun(c => {
+    const userOptions = template.tabular.options.get();
+    const options = _.extend({}, ajaxOptions, userOptions);
 
     //console.log('userOptions autorun', options);
 
@@ -271,9 +288,7 @@ var tabularOnRendered = function () {
       });
     }
 
-    if (!('order' in options)) {
-      options.order = [];
-    }
+    if (!('order' in options)) options.order = [];
 
     // After the first time, we need to destroy before rebuilding.
     if (table) {
@@ -289,7 +304,7 @@ var tabularOnRendered = function () {
     table = $tableElement.DataTable(options);
   });
 
-  template.autorun(function () {
+  template.autorun(() => {
     // Get table name non-reactively
     var tableName = Tracker.nonreactive(function () {
       return template.tabular.tableName.get();
@@ -310,9 +325,7 @@ var tabularOnRendered = function () {
     //   another user, causing visible result set to change.
     var tableInfo = Tabular.getRecord(tableName);
 
-    if (!collection || !tableInfo) {
-      return;
-    }
+    if (!collection || !tableInfo) return;
 
     // Build options object to pass to `find`.
     // It's important that we use the same options
@@ -349,9 +362,7 @@ var tabularOnRendered = function () {
     // from the server, and eventually we'll have them all.
     // Without this check in here, there's a lot of flashing in the
     // table as rows are added.
-    if (cursor.count() < tableInfo.ids.length) {
-      return;
-    }
+    if (cursor.count() < tableInfo.ids.length) return;
 
     // Get data as array for DataTables to consume in the ajax function
     template.tabular.data = cursor.fetch();
@@ -373,8 +384,8 @@ var tabularOnRendered = function () {
   });
 
   // XXX Not working
-  template.autorun(function () {
-    var isLoading = template.tabular.isLoading.get();
+  template.autorun(() => {
+    const isLoading = template.tabular.isLoading.get();
     //console.log('LOADING', isLoading);
     if (isLoading) {
       template.$('.dataTables_processing').show();
@@ -387,15 +398,9 @@ var tabularOnRendered = function () {
   $tableElement.on('length.dt', function () {
     resetTablePaging = true;
   });
-};
+});
 
-if (typeof Template.tabular.onRendered === 'function') {
-  Template.tabular.onRendered(tabularOnRendered);
-} else {
-  Template.tabular.rendered = tabularOnRendered;
-}
-
-var tabularOnDestroyed = function () {
+Template.tabular.onDestroyed(function () {
   // Clear last skip tracking
   Session.set('Tabular.LastSkip', 0);
   // Run a user-provided onUnload function
@@ -404,13 +409,7 @@ var tabularOnDestroyed = function () {
       typeof this.tabular.tableDef.onUnload === 'function') {
     this.tabular.tableDef.onUnload();
   }
-};
-
-if (typeof Template.tabular.onDestroyed === 'function') {
-  Template.tabular.onDestroyed(tabularOnDestroyed);
-} else {
-  Template.tabular.destroyed = tabularOnDestroyed;
-}
+});
 
 //function setUpTestingAutoRunLogging(template) {
 //  template.autorun(function () {
@@ -438,3 +437,5 @@ if (typeof Template.tabular.onDestroyed === 'function') {
 //    console.log('limit changed', val);
 //  });
 //}
+
+export default Tabular;
