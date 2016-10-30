@@ -106,6 +106,19 @@ var tabularOnRendered = function () {
         data: template.tabular.data
       });
 
+    },
+    initComplete: function () {
+      var options = template.tabular.options.get();
+      if (options.search && options.search.onEnterOnly) {
+        $('.dataTables_filter input')
+          .unbind()
+          .bind('keyup change', function (event) {
+            if (!table) return;
+            if (event.keyCode === 13 || this.value === '') {
+              table.search(this.value).draw();
+            }
+          });
+      }
     }
   };
 

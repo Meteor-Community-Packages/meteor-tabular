@@ -3,6 +3,46 @@ aldeed:tabular
 
 A Meteor package that creates reactive [DataTables](http://datatables.net/) in an efficient way, allowing you to display the contents of enormous collections without impacting app performance.
 
+## Table of Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Features](#features)
+- [Installation](#installation)
+- [Online Demo App](#online-demo-app)
+- [Example](#example)
+- [Displaying Only Part of a Collection's Data Set](#displaying-only-part-of-a-collections-data-set)
+- [Passing Options to the DataTable](#passing-options-to-the-datatable)
+- [Template Cells](#template-cells)
+- [Searching](#searching)
+  - [Customizing Search Behavior](#customizing-search-behavior)
+- [Using Collection Helpers](#using-collection-helpers)
+- [Publishing Extra Fields](#publishing-extra-fields)
+- [Modifying the Selector](#modifying-the-selector)
+- [Saving state](#saving-state)
+- [Security](#security)
+- [Caching the Documents](#caching-the-documents)
+- [Hooks](#hooks)
+- [Rendering a responsive table](#rendering-a-responsive-table)
+- [Active Datasets](#active-datasets)
+- [Using a Custom Publish Function](#using-a-custom-publish-function)
+  - [Example](#example-1)
+- [Tips](#tips)
+  - [Get the DataTable instance](#get-the-datatable-instance)
+  - [Detect row clicks and get row data](#detect-row-clicks-and-get-row-data)
+  - [Search in one column](#search-in-one-column)
+  - [Adjust column widths](#adjust-column-widths)
+  - [Turning Off Paging or Showing "All"](#turning-off-paging-or-showing-all)
+  - [Customize the "Processing" Message](#customize-the-processing-message)
+  - [I18N Example](#i18n-example)
+- [Integrating DataTables Extensions](#integrating-datatables-extensions)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Features
+
 * Fast: Uses an intelligent automatic data subscription so that table data is not loaded until it's needed.
 * Reactive: As your collection data changes, so does your table. You can also reactively update the query selector if you provide your own filter buttons outside of the table.
 * Customizable: Anything you can do with the DataTables library is supported, and you can provide your own publish function to build custom tables or tables than join data from two collections.
@@ -15,42 +55,6 @@ Although this appears similar to the [jquery-datatables](https://github.com/Luma
 * This package allows you to specify a Spacebars template as a cell's content.
 * This package handles the reactive table updates in a different way.
 * This package is designed to work with Twitter Bootstrap 3
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [aldeed:tabular](#aldeedtabular)
-  - [Installation](#installation)
-  - [Online Demo App](#online-demo-app)
-  - [Example](#example)
-  - [Displaying Only Part of a Collection's Data Set](#displaying-only-part-of-a-collections-data-set)
-  - [Passing Options to the DataTable](#passing-options-to-the-datatable)
-  - [Template Cells](#template-cells)
-  - [Searching](#searching)
-    - [Customizing Search Behavior](#customizing-search-behavior)
-  - [Using Collection Helpers](#using-collection-helpers)
-  - [Publishing Extra Fields](#publishing-extra-fields)
-  - [Modifying the Selector](#modifying-the-selector)
-  - [Saving state](#saving-state)
-  - [Security](#security)
-  - [Caching the Documents](#caching-the-documents)
-  - [Hooks](#hooks)
-  - [Rendering a responsive table](#rendering-a-responsive-table)
-  - [Active Datasets](#active-datasets)
-  - [Using a Custom Publish Function](#using-a-custom-publish-function)
-    - [Example](#example-1)
-  - [Tips](#tips)
-    - [Get the DataTable instance](#get-the-datatable-instance)
-    - [Detect row clicks and get row data](#detect-row-clicks-and-get-row-data)
-    - [Search in one column](#search-in-one-column)
-    - [Adjust column widths](#adjust-column-widths)
-    - [Turning Off Paging or Showing "All"](#turning-off-paging-or-showing-all)
-    - [Customize the "Processing" Message](#customize-the-processing-message)
-    - [I18N Example](#i18n-example)
-  - [Integrating DataTables Extensions](#integrating-datatables-extensions)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Installation
 
@@ -218,13 +222,14 @@ You can add a `search` object to your table options to change the default behavi
   search: {
     caseInsensitive: true,
     smart: true,
+    onEnterOnly: false,
   }
 }
 ```
 
-You can set either of these to `false` if you prefer. See http://datatables.net/reference/option/search
+You can set `caseInsensitive` or `smart` to `false` if you prefer. See http://datatables.net/reference/option/search. The `regex` option is not yet supported.
 
-The `regex` option is not yet supported.
+`onEnterOnly` is custom to this package. Set it to `true` to run search only when the user presses ENTER in the search box, rather than on keyup. This is useful for large collections to avoid slow searching.
 
 ## Using Collection Helpers
 
