@@ -40,6 +40,7 @@ A Meteor package that creates reactive [DataTables](http://datatables.net/) in a
   - [I18N Example](#i18n-example)
   - [Reactive Column Titles](#reactive-column-titles)
 - [Integrating DataTables Extensions](#integrating-datatables-extensions)
+  - [Example: Adding Buttons](#example-adding-buttons)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -539,19 +540,55 @@ You can set the `titleFn` column option to a function instead of supplying a str
 
 ## Integrating DataTables Extensions
 
-There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables.
+There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables. To integrate them into Tabular, it is best to use the NPM packages.
 
-To integrate them into Tabular, just [download the JS and CSS files](http://datatables.net/download/index) for the extension.
+### Example: Adding Buttons
 
-Feel free to pick up the debug versions since Meteor should automatically minify them for you.
+To add buttons for print, column visibility, file export, and more, you can use the DataTables buttons extension. Install the necessary packages in your app with NPM. For example, if you're using the Bootstrap theme, run:
 
-Next, add the JS and CSS files into the `client/compatibility` directory under your project root.
-You can read more about this special folder at http://docs.meteor.com/#/full/structuringyourapp
+```bash
+$ npm install --save datatables.net-buttons datatables.net-buttons-bs
+```
 
-If you're using the TableTools extension, there is a SWF file that needs to be added as well; it comes with the .zip file or you can directly get the latest version at https://github.com/DataTables/TableTools/tree/master/swf
+For package names for other themes, see https://datatables.net/download/npm
 
-By default, DataTables looks for the SWF file at `http://yoursite.com/swf/copy_csv_xls.swf`. As a result, create a directory `public/swf` in your Meteor project root and add the `copy_csv_xls.swf` or `copy_csv_xls_pdf.swf` file into that directory.
+Once the packages are installed, you need to import them in one of your client JavaScript files:
 
-Then, enable the TableTools extension via the [dom property](http://datatables.net/extensions/tabletools/initialisation) in the DataTable options; you can do this directly in the [Tabular initialization code](#passing-options-to-the-datatable) so you don't need to write any jQuery. You should then be able to see the Flash buttons.
+```js
+import { $ } from 'meteor/jquery';
 
-Keep in mind that this extension only works on table rows that the user has selected, so if the buttons aren't doing anything, you will first want to select some rows.
+// Bootstrap Theme
+import dataTablesBootstrap from 'datatables.net-bs';
+import 'datatables.net-bs/css/dataTables.bootstrap.css';
+
+// Buttons Core
+import dataTableButtons from 'datatables.net-buttons-bs';
+
+// Import whichever buttons you are using
+import columnVisibilityButton from 'datatables.net-buttons/js/buttons.colVis.js';
+import html5ExportButtons from 'datatables.net-buttons/js/buttons.html5.js';
+import flashExportButtons from 'datatables.net-buttons/js/buttons.flash.js';
+import printButton from 'datatables.net-buttons/js/buttons.print.js';
+
+// Then initialize everything you imported
+dataTablesBootstrap(window, $);
+dataTableButtons(window, $);
+columnVisibilityButton(window, $);
+html5ExportButtons(window, $);
+flashExportButtons(window, $);
+printButton(window, $);
+```
+
+Finally, for the Tabular tables that need them, add the `buttons` and `buttonContainer` options. The `buttons` option is part of DataTables and is documented here: https://datatables.net/extensions/buttons/ The `buttonContainer` option is part of `aldeed:tabular` and does the tricky task of appending the buttons to some element in the generated table. Set it to the CSS selector for the container.
+
+Bootstrap example:
+
+```js
+new Tabular.Table({
+  // other properties...
+  buttonContainer: '.col-sm-6:eq(0)',
+  buttons: ['copy', 'excel', 'csv', 'colvis'],
+});
+```
+
+If you are using the default DataTables theme, you can use the `dom` option instead of `buttonContainer`. See https://datatables.net/extensions/buttons/#Displaying-the-buttons

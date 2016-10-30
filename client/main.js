@@ -1,6 +1,7 @@
 /* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, */
 import { $ } from 'meteor/jquery';
 import dataTableInit from 'datatables.net';
+import dataTableButtons from 'datatables.net-buttons';
 import { Mongo } from 'meteor/mongo';
 import { Template } from 'meteor/templating';
 import Tabular from '../common/Tabular';
@@ -11,6 +12,7 @@ import { getMongoSort, objectsAreEqual, sortsAreEqual } from './util';
 import './tabular.html';
 
 dataTableInit(window, $);
+dataTableButtons(window, $);
 
 Template.registerHelper('TabularTables', Tabular.tablesByName);
 
@@ -360,6 +362,11 @@ Template.tabular.onRendered(function () {
     // We start with an empty table.
     // Data will be populated by ajax function now.
     table = $tableElement.DataTable(options);
+
+    if (options.buttonContainer) {
+      const container = $(options.buttonContainer, table.table().container());
+      table.buttons().container().appendTo(container);
+    }
   });
 
   template.autorun(() => {
