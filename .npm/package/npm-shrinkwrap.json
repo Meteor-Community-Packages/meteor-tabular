@@ -2,9 +2,13 @@
   "dependencies": {
     "datatables": {
       "version": "1.10.9",
+      "resolved": "https://registry.npmjs.org/datatables/-/datatables-1.10.9.tgz",
+      "from": "datatables@1.10.9",
       "dependencies": {
         "jquery": {
-          "version": "2.1.4"
+          "version": "2.1.4",
+          "resolved": "https://registry.npmjs.org/jquery/-/jquery-2.1.4.tgz",
+          "from": "jquery@2.1.4"
         }
       }
     }

@@ -1,10 +1,10 @@
 /* global Package, Npm */
 
 Package.describe({
-  name: 'aldeed:tabular',
+  name: 'maxko87:tabular-nocounts',
   summary: 'Datatables for large or small datasets in Meteor',
-  version: '1.6.1',
-  git: 'https://github.com/aldeed/meteor-tabular.git'
+  version: '1.6.1_1',
+  git: 'https://github.com/maxko87/meteor-tabular.git'
 });
 
 Npm.depends({

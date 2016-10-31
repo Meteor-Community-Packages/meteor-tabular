@@ -115,7 +115,12 @@ Meteor.publish("tabular_getInfo", function(tableName, selector, sort, skip, limi
 
   var recordReady = false;
   var updateRecords = function updateRecords() {
-    var currentCount = countCursor.count();
+    if(table.alternativeCount){
+      var currentCount = table.alternativeCount(self.userId);
+    }
+    else {
+      var currentCount = countCursor.count();
+    }
 
     // From https://datatables.net/manual/server-side
     // recordsTotal: Total records, before filtering (i.e. the total number of records in the database)
