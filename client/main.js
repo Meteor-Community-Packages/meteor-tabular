@@ -1,7 +1,6 @@
 /* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, */
 import { $ } from 'meteor/jquery';
 import dataTableInit from 'datatables.net';
-import dataTableButtons from 'datatables.net-buttons';
 import { Mongo } from 'meteor/mongo';
 import { Template } from 'meteor/templating';
 import Tabular from '../common/Tabular';
@@ -12,7 +11,6 @@ import { getMongoSort, objectsAreEqual, sortsAreEqual } from './util';
 import './tabular.html';
 
 dataTableInit(window, $);
-dataTableButtons(window, $);
 
 Template.registerHelper('TabularTables', Tabular.tablesByName);
 
@@ -152,7 +150,7 @@ Template.tabular.onRendered(function () {
       const columns = options.columns;
 
       $(headerRow).find('td,th').each((index, headerCell) => {
-        const titleFunction = columns[index].titleFn;
+        const titleFunction = columns[index] && columns[index].titleFn;
         if (typeof titleFunction === 'function') {
           headerCell.innerHTML = '';
           if (headerCell.__blazeViewInstance) {
