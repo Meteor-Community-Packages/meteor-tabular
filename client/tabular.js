@@ -99,12 +99,21 @@ var tabularOnRendered = function () {
     initComplete: function () {
       var options = template.tabular.options.get();
       if (options.search && options.search.onEnterOnly) {
+        var replaceSearchLabel = function(newText){
+          $('.dataTables_filter label').contents().filter(function() {
+            return this.nodeType === 3 && this.textContent.trim().length;
+          }).replaceWith(newText);
+        }
         $('.dataTables_filter input')
           .unbind()
           .bind('keyup change', function (event) {
             if (!table) return;
             if (event.keyCode === 13 || this.value === '') {
+              replaceSearchLabel("Search:");
               table.search(this.value).draw();
+            }
+            else {
+              replaceSearchLabel("Search (click enter):");
             }
           });
       }
