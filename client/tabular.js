@@ -113,7 +113,7 @@ var tabularOnRendered = function () {
               table.search(this.value).draw();
             }
             else {
-              replaceSearchLabel("Search (click enter):");
+              replaceSearchLabel("Search (hit enter):");
             }
           });
       }
