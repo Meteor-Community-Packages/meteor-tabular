@@ -10,7 +10,9 @@ Tabular.Table = class {
     if (!options) throw new Error('Tabular.Table options argument is required');
     if (!options.name) throw new Error('Tabular.Table options must specify name');
     if (!options.columns) throw new Error('Tabular.Table options must specify columns');
-    if (!(options.collection instanceof Mongo.Collection)) {
+    if (!(options.collection instanceof Mongo.Collection
+      || options.collection instanceof Mongo.constructor // Fix: error if `collection: Meteor.users`
+    )) {
       throw new Error('Tabular.Table options must specify collection');
     }
 
