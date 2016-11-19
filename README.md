@@ -547,6 +547,24 @@ More options to translate can be found here: https://datatables.net/reference/op
 
 You can set the `titleFn` column option to a function instead of supplying a string `title` option. This is reactively rerun as necessary.
 
+### Optimizing the Total Table Count
+
+By default, a count of the entire available filtered dataset is done on the server. This can be slow for large datasets. You have two options that can help:
+
+First, you can calculate total counts yourself and return them from a function provided as the `alternativeCount` option to your `Tabular.Table`:
+
+```js
+alternativeCount: (selector) => 200,
+```
+
+Second, you can skip the count altogether. If you do this, we return a fake count that ensures the Next button will be available. But the fake count will not be the correct total count, so the paging info and the numbered page buttons will be misleading. To deal with this, you should use `pagingType: 'simple'` and either `info: false` or an `infoCallback` function that omits the total count:
+
+```js
+skipCount: true,
+pagingType: 'simple',
+infoCallback: (settings, start, end) => `Showing ${start} to ${end}`,
+```
+
 ## Integrating DataTables Extensions
 
 There are a wide variety of [useful extensions](http://datatables.net/extensions/index) for DataTables. To integrate them into Tabular, it is best to use the NPM packages.

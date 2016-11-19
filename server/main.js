@@ -108,11 +108,22 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
 
   let filteredRecordIds = filteredCursor.map(doc => doc._id);
 
+  // If we are not going to count for real, in order to improve performance, then we will fake
+  // the count to ensure the Next button is always available.
+  const fakeCount = filteredRecordIds.length + skip + 1;
+
   const countCursor = table.collection.find(selector, {fields: {_id: 1}});
 
   let recordReady = false;
   let updateRecords = () => {
-    const currentCount = countCursor.count();
+    let currentCount;
+    if (!table.skipCount) {
+      if (typeof table.alternativeCount === 'function') {
+        currentCount = table.alternativeCount(selector);
+      } else {
+        currentCount = countCursor.count();
+      }
+    }
 
     // From https://datatables.net/manual/server-side
     // recordsTotal: Total records, before filtering (i.e. the total number of records in the database)
@@ -123,8 +134,8 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       // count() will give us the updated total count
       // every time. It does not take the find options
       // limit into account.
-      recordsTotal: currentCount,
-      recordsFiltered: currentCount
+      recordsTotal: table.skipCount ? fakeCount : currentCount,
+      recordsFiltered: table.skipCount ? fakeCount : currentCount
     };
 
     if (recordReady) {

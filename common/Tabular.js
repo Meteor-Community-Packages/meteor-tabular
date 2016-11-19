@@ -30,6 +30,8 @@ Tabular.Table = class {
     this.allowFields = options.allowFields;
     this.changeSelector = options.changeSelector;
     this.throttleRefresh = options.throttleRefresh;
+    this.alternativeCount = options.alternativeCount;
+    this.skipCount = options.skipCount;
 
     if (_.isArray(options.extraFields)) {
       const fields = {};
@@ -41,7 +43,22 @@ Tabular.Table = class {
 
     this.selector = options.selector;
 
-    this.options = _.omit(options, 'collection', 'pub', 'sub', 'onUnload', 'allow', 'allowFields', 'extraFields', 'name', 'selector');
+    this.options = _.omit(
+      options,
+      'collection',
+      'pub',
+      'sub',
+      'onUnload',
+      'allow',
+      'allowFields',
+      'changeSelector',
+      'throttleRefresh',
+      'extraFields',
+      'alternativeCount',
+      'skipCount',
+      'name',
+      'selector'
+    );
 
     Tabular.tablesByName[this.name] = this;
   }
