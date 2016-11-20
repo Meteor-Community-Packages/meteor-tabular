@@ -268,6 +268,23 @@ You can set `caseInsensitive` or `smart` to `false` if you prefer. See http://da
 
 `onEnterOnly` is custom to this package. Set it to `true` to run search only when the user presses ENTER in the search box, rather than on keyup. This is useful for large collections to avoid slow searching.
 
+There are also two options to optimize searching for particular columns:
+
+```js
+columns: [
+    {
+      data: '_id',
+      title: 'ID',
+      search: {
+        isNumber: true,
+        exact: true,
+      },
+    },
+]
+```
+
+For each column, you can set `search.isNumber` to `true` to cast whatever is entered to a `Number` and search for that, and you can set `search.exact` to `true` to search only for an exact match of the search string. (This overrides the table-level `caseInsensitive` and `smart` options for this column only.)
+
 ## Using Collection Helpers
 
 The DataTables library supports calling functions on the row data by appending your `data` string with `()`. This can be used along with the `dburles:collection-helpers` package (or your own collection transform). For example:

@@ -107,6 +107,7 @@ Template.tabular.onRendered(function () {
 
       // Update sort
       template.tabular.sort.set(getMongoSort(data.order, options.columns));
+
       // Update pubSelector
       const pubSelector = getPubSelector(
         template.tabular.selector,
@@ -114,7 +115,8 @@ Template.tabular.onRendered(function () {
         template.tabular.searchFields,
         template.tabular.searchCaseInsensitive,
         template.tabular.splitSearchByWhitespace,
-        data.columns || null
+        data.columns || null,
+        options.columns,
       );
       template.tabular.pubSelector.set(pubSelector);
 

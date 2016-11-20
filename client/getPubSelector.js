@@ -6,7 +6,8 @@ function getPubSelector(
     searchFields,
     searchCaseInsensitive,
     splitSearchByWhitespace,
-    columns
+    columns,
+    tableColumns,
   ) {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,6 +43,7 @@ function getPubSelector(
     searchCaseInsensitive,
     splitSearchByWhitespace,
     columns,
+    tableColumns,
   );
 }
 
@@ -52,6 +54,7 @@ function createMongoSearchQuery(
   searchCaseInsensitive,
   splitSearchByWhitespace,
   columns,
+  tableColumns,
 ) {
   // See if we can resolve the search string to a number,
   // in which case we use an extra query because $regex
@@ -59,10 +62,15 @@ function createMongoSearchQuery(
   const searches = [];
 
   _.each(searchColumns, field => {
+    // Get the column options from the Tabular.Table so we can check search options
+    const column = _.findWhere(tableColumns, { data: field.data });
+    const exactSearch = column && column.search && column.search.exact;
+    const numberSearch = column && column.search && column.search.isNumber;
+
     let searchValue = field.search.value || '';
 
     // Split and OR by whitespace, as per default DataTables search behavior
-    if (splitSearchByWhitespace) {
+    if (splitSearchByWhitespace && !exactSearch) {
       searchValue = searchValue.match(/\S+/g);
     } else {
       searchValue = [searchValue];
@@ -70,23 +78,33 @@ function createMongoSearchQuery(
 
     _.each(searchValue, searchTerm => {
       const m1 = {};
-      const m2 = {};
 
       // String search
-      m1[field.data] = { $regex: searchTerm };
+      if (exactSearch) {
+        if (numberSearch) {
+          const searchTermAsNumber = Number(searchTerm);
+          if (!isNaN(searchTermAsNumber)) {
+            searches.push({ [field.data]: searchTermAsNumber });
+          } else {
+            searches.push({ [field.data]: searchTerm });
+          }
+        } else {
+          searches.push({ [field.data]: searchTerm });
+        }
+      } else {
+        const searchObj = { $regex: searchTerm };
 
-      // DataTables searches are case insensitive by default
-      if (searchCaseInsensitive !== false) {
-        m1[field.data].$options = 'i';
-      }
+        // DataTables searches are case insensitive by default
+        if (searchCaseInsensitive !== false) searchObj.$options = 'i';
 
-      searches.push(m1);
+        searches.push({ [field.data]: searchObj });
 
-      // Number search
-      const numSearchString = Number(searchTerm);
-      if (!isNaN(numSearchString)) {
-        m2[field.data] = numSearchString;
-        searches.push(m2);
+        // For backwards compatibility, we do non-exact searches as a number, too,
+        // even if isNumber isn't true
+        const searchTermAsNumber = Number(searchTerm);
+        if (!isNaN(searchTermAsNumber)) {
+          searches.push({ [field.data]: searchTermAsNumber });
+        }
       }
     });
   });
@@ -94,8 +112,10 @@ function createMongoSearchQuery(
   let result;
   if (typeof selector === 'object' && selector !== null) {
     result = {$and: [selector, {$or: searches}]};
-  } else {
+  } else if (searches.length > 1) {
     result = {$or: searches};
+  } else {
+    result = searches[0] || {};
   }
 
   return result;
