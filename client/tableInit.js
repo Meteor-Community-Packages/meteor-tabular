@@ -37,6 +37,16 @@ function tableInit(tabularTable, template) {
       if (options.searchable !== false) searchFields.push(cleanFieldNameForSearch(data));
     }
 
+    // If `titleFn` option is provided, we set `title` option to the string
+    // result of that function. This is done for any extensions that might
+    // use the title, such as the colvis button. However `Blaze.toHTML` is
+    // not reactive, so in the `headerCallback` in main.js, we will set the
+    // actual column header with Blaze.render so that it is reactive.
+    const titleFunction = options.titleFn;
+    if (typeof titleFunction === 'function') {
+      options.title = Blaze.toHTML(new Blaze.View(titleFunction));
+    }
+
     return options;
   });
 
