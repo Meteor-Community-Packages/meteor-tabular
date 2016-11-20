@@ -455,10 +455,8 @@ Template.tabular.onRendered(function () {
     template.tabular.isLoading.set(false);
   });
 
-  // XXX Not working
   template.autorun(() => {
     const isLoading = template.tabular.isLoading.get();
-    //console.log('LOADING', isLoading);
     if (isLoading) {
       template.$('.dataTables_processing').show();
     } else {

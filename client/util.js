@@ -46,11 +46,17 @@ export function getMongoSort(order, columns) {
   // TODO support the nested arrays format for sort
   // and ignore instance functions like "foo()"
   const sort = [];
-  _.each(order, function (ord) {
-    const propName = columns[ord.column].data;
-    const orderable = columns[ord.column].orderable;
+  _.each(order, ({ column: colIndex, dir }) => {
+    const column = columns[colIndex];
+
+    // Sometimes when swapping out new table columns/collection, this will be called once
+    // with the old `order` object but the new `columns`. We protect against that here.
+    if (!column) return;
+
+    const propName = column.data;
+    const orderable = column.orderable;
     if (typeof propName === 'string' && orderable !== false) {
-      sort.push([propName, ord.dir]);
+      sort.push([propName, dir]);
     }
   });
   return sort;

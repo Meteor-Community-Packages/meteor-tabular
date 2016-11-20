@@ -62,11 +62,11 @@ This version also includes a few fixes and a few new features.
 
 Although this appears similar to the [jquery-datatables](https://github.com/LumaPictures/meteor-jquery-datatables) Meteor package, there are actually many differences:
 
-* This package is updated to work with Meteor 1.0+.
+* This package is updated to work with Meteor 1.3+.
 * This package has a much smaller codebase and includes less of the DataTables library.
-* This package allows you to specify a Spacebars template as a cell's content.
+* This package allows you to specify a Blaze template as a cell's content.
 * This package handles the reactive table updates in a different way.
-* This package is designed to work with the Twitter Bootstrap 3 DataTables theme
+* This package is designed to work with any DataTables theme
 
 ## Installation
 
