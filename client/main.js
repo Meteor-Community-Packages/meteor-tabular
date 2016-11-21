@@ -45,7 +45,7 @@ Template.tabular.helpers({
 
 Template.tabular.onRendered(function () {
   const template = this;
-  const $tableElement = template.$('table');
+  template.$tableElement = template.$('table');
   let table;
   let resetTablePaging = false;
 
@@ -361,16 +361,14 @@ Template.tabular.onRendered(function () {
 
     // After the first time, we need to destroy before rebuilding.
     if (table) {
-      var dt = $tableElement.DataTable();
-      if (dt) {
-        dt.destroy();
-        $tableElement.empty();
-      }
+      var dt = template.$tableElement.DataTable();
+      if (dt) dt.destroy();
+      template.$tableElement.empty();
     }
 
     // We start with an empty table.
     // Data will be populated by ajax function now.
-    table = $tableElement.DataTable(options);
+    table = template.$tableElement.DataTable(options);
 
     if (options.buttonContainer) {
       const container = $(options.buttonContainer, table.table().container());
@@ -467,7 +465,7 @@ Template.tabular.onRendered(function () {
   });
 
   // force table paging to reset to first page when we change page length
-  $tableElement.on('length.dt', function () {
+  template.$tableElement.on('length.dt', function () {
     resetTablePaging = true;
   });
 });
@@ -483,10 +481,10 @@ Template.tabular.onDestroyed(function () {
   }
 
   // Destroy the DataTable instance to avoid memory leak
-  const table = this.$('table');
-  if (table.length) {
-    const dt = table.DataTable();
+  if (this.$tableElement.length) {
+    const dt = this.$tableElement.DataTable();
     if (dt) dt.destroy();
+    this.$tableElement.empty();
   }
 });
 
