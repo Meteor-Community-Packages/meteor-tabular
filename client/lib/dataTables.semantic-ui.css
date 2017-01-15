@@ -1,0 +1,148 @@
+.ui.table.dataTable thead th {
+  cursor: pointer;
+  white-space: nowrap;
+  border-left: 1px solid rgba(34, 36, 38, 0.15);
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.ui.table.dataTable thead th:first-child {
+  border-left: none;
+}
+
+.ui.table.dataTable thead .sorting,
+.ui.table.dataTable thead .sorting_asc ,
+.ui.table.dataTable thead .sorting_desc ,
+.ui.table.dataTable thead .sorting_asc_disabled ,
+.ui.table.dataTable thead .sorting_desc_disabled,
+.ui.table.dataTable thead .sorting:hover,
+.ui.table.dataTable thead .sorting_asc:hover ,
+.ui.table.dataTable thead .sorting_desc:hover ,
+.ui.table.dataTable thead .sorting_asc_disabled:hover ,
+.ui.table.dataTable thead .sorting_desc_disabled:hover  {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.ui.table.dataTable thead th:after {
+  display: none;
+  font-style: normal;
+  font-weight: normal;
+  text-decoration: inherit;
+  content: '';
+  height: 1em;
+  width: auto;
+  opacity: 0.8;
+  margin: 0em 0em 0em 0.5em;
+  font-family: 'Icons';
+}
+
+.ui.table.dataTable thead th.sorting_asc:after {
+  /*content: '\f0d8';*/
+  content: '\f160';
+}
+
+.ui.table.dataTable thead th.sorting_desc:after {
+  /*content: '\f0d7';*/
+  content: '\f161';
+}
+
+.ui.table.dataTable thead th.sorting:after {
+    content: '\f0dc';
+    opacity: 0.2;
+}
+
+/* Hover */
+
+.ui.table.dataTable th.disabled:hover {
+  cursor: auto;
+  color: rgba(40, 40, 40, 0.3);
+}
+
+.ui.table.dataTable thead th:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* Sorted */
+
+.ui.table.dataTable thead .sorting_asc ,
+.ui.table.dataTable thead .sorting_desc ,
+.ui.table.dataTable thead .sorting_asc_disabled ,
+.ui.table.dataTable thead .sorting_desc_disabled {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.95);
+}
+
+.ui.table.dataTable thead .sorting:after ,
+.ui.table.dataTable thead .sorting_asc:after ,
+.ui.table.dataTable thead .sorting_desc:after ,
+.ui.table.dataTable thead .sorting_asc_disabled:after ,
+.ui.table.dataTable thead .sorting_desc_disabled:after {
+  display: inline-block;
+}
+
+/* Sorted Hover */
+
+.ui.table.dataTable thead .sorting_asc:hover ,
+.ui.table.dataTable thead .sorting_desc:hover ,
+.ui.table.dataTable thead .sorting_asc_disabled:hover ,
+.ui.table.dataTable thead .sorting_desc_disabled:hover  {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.95);
+}
+
+
+.dataTables_length select {
+   background: #fff none repeat scroll 0 0;
+    border: 1px solid rgba(34, 36, 38, 0.15);
+    border-radius: 0.285714rem;
+    box-shadow: none;
+    color: rgba(0, 0, 0, 0.87);
+    cursor: pointer;
+    display: inline-block;
+     line-height: 1.2142em;
+    min-height:   0.714286em;
+
+    outline: 0 none;
+    padding: 0.3em;
+    transform: rotateZ(0deg);
+    transition: box-shadow 0.1s ease 0s, width 0.1s ease 0s;
+    white-space: normal;
+    word-wrap: break-word;
+	 }
+
+  .dataTables_wrapper .dataTables_filter {
+	text-align: right;
+
+    color: rgba(0, 0, 0, 0.87);
+    display: inline-flex;
+    position: relative;
+   }
+
+   .dataTables_wrapper .dataTables_filter input {
+	  margin-left: 0.5em;
+   }
+
+  .dataTables_wrapper .dataTables_info {
+	clear: both;
+	padding-top: 0.755em;
+   }
+
+.dataTables_filter input {
+    background: #fff none repeat scroll 0 0;
+    border: 1px solid rgba(34, 36, 38, 0.15);
+    border-radius: 0.285714rem;
+    box-shadow: none;
+    color: rgba(0, 0, 0, 0.87);
+    flex: 1 0 auto;
+    font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+	height:1em;
+    margin: 0;
+    max-width: 100%;
+    outline: 0 none;
+    padding: .4em;
+    text-align: left;
+    transition: background-color 0.1s ease 0s, box-shadow 0.1s ease 0s, border-color 0.1s ease 0s;
+}
