@@ -58,8 +58,6 @@ function tableInit(tabularTable, template) {
 };
 
 tableInit.TabularCaches = {};
-
-window.tableInit = tableInit;
 // The `tmpl` column option is special for this package. We parse it into other column options
 // and then remove it.
 function templateColumnOptions({ data, render, tmpl, tmplContext }) {
