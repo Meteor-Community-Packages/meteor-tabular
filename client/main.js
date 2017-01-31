@@ -441,7 +441,7 @@ Template.tabular.onRendered(function () {
             //the data for this template may have changed, so re-render
             //TODO: might be better to check if the values used have changed somehow?
             if(item.template.dataVar){
-              item.template.dataVar.set(item.template.dataVar.get());
+              item.template.dataVar.set(_.extend(item.template.dataVar.get(), newDoc));
             }
           });
         }

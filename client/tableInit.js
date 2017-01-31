@@ -79,7 +79,8 @@ function templateColumnOptions({ data, render, tmpl, tmplContext }) {
     //TODO: should really consider clearing this data otherwise it will just grow larger.
     //Perhaps this can be done in a triggersExit?
     if(rowData._id && tableInit.TabularCaches[rowData._id] && tableInit.TabularCaches[rowData._id][tmplName]){
-      cell.innerHTML = tableInit.TabularCaches[rowData._id][tmplName].cell.innerHTML;
+      //cell.innerHTML = tableInit.TabularCaches[rowData._id][tmplName].cell.innerHTML;
+      cell.parentElement.replaceChild(tableInit.TabularCaches[rowData._id][tmplName].cell, cell);
       return tableInit.TabularCaches[rowData._id][tmplName].template;
     }
     // Allow the table to adjust the template context if desired
