@@ -57,6 +57,9 @@ function tableInit(tabularTable, template) {
   return columns;
 };
 
+tableInit.TabularCaches = {};
+
+window.tableInit = tableInit;
 // The `tmpl` column option is special for this package. We parse it into other column options
 // and then remove it.
 function templateColumnOptions({ data, render, tmpl, tmplContext }) {
@@ -70,12 +73,33 @@ function templateColumnOptions({ data, render, tmpl, tmplContext }) {
   // When the cell is created, render its content from
   // the provided template with row data.
   options.createdCell = (cell, cellData, rowData) => {
+
+    const tmplName = tmpl.viewName.replace("Template.","");
+
+    //if the row is uniquely identifiable and we have already rendered this template:
+    //take the original cells value and write it directly to the new cell
+    //TODO: should really consider clearing this data otherwise it will just grow larger.
+    //Perhaps this can be done in a triggersExit?
+    if(rowData._id && tableInit.TabularCaches[rowData._id] && tableInit.TabularCaches[rowData._id][tmplName]){
+      cell.innerHTML = tableInit.TabularCaches[rowData._id][tmplName].cell.innerHTML;
+      return tableInit.TabularCaches[rowData._id][tmplName].template;
+    }
     // Allow the table to adjust the template context if desired
     if (typeof tmplContext === 'function') {
       rowData = tmplContext(rowData);
     }
 
-    Blaze.renderWithData(tmpl, rowData, cell);
+    const ret = Blaze.renderWithData(tmpl, rowData, cell);
+    if(rowData._id){
+      if(!tableInit.TabularCaches[rowData._id]){
+        tableInit.TabularCaches[rowData._id] = {};
+      }
+      tableInit.TabularCaches[rowData._id][tmplName] = {
+        template: ret,
+        cell: cell
+      };
+    }
+    return ret;
   };
 
   // If we're displaying a template for this field and we've also provided data, we want to
