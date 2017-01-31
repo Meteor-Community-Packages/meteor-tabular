@@ -79,25 +79,20 @@ function templateColumnOptions({ data, render, tmpl, tmplContext }) {
     //TODO: should really consider clearing this data otherwise it will just grow larger.
     //Perhaps this can be done in a triggersExit?
     if(rowData._id && tableInit.TabularCaches[rowData._id] && tableInit.TabularCaches[rowData._id][tmplName]){
-      cell.innerHTML = tableInit.TabularCaches[rowData._id][tmplName].cell.innerHTML;
-      return tableInit.TabularCaches[rowData._id][tmplName].template;
+      cell.innerHTML = tableInit.TabularCaches[rowData._id][tmplName].innerHTML;
     }
     // Allow the table to adjust the template context if desired
     if (typeof tmplContext === 'function') {
       rowData = tmplContext(rowData);
     }
 
-    const ret = Blaze.renderWithData(tmpl, rowData, cell);
+    Blaze.renderWithData(tmpl, rowData, cell);
     if(rowData._id){
       if(!tableInit.TabularCaches[rowData._id]){
         tableInit.TabularCaches[rowData._id] = {};
       }
-      tableInit.TabularCaches[rowData._id][tmplName] = {
-        template: ret,
-        cell: cell
-      };
+      tableInit.TabularCaches[rowData._id][tmplName] = cell;
     }
-    return ret;
   };
 
   // If we're displaying a template for this field and we've also provided data, we want to
