@@ -80,7 +80,7 @@ function templateColumnOptions({ data, render, tmpl, tmplContext }) {
     //Perhaps this can be done in a triggersExit?
     if(rowData._id && tableInit.TabularCaches[rowData._id] && tableInit.TabularCaches[rowData._id][tmplName]){
       cell.innerHTML = tableInit.TabularCaches[rowData._id][tmplName].cell.innerHTML;
-      tableInit.TabularCaches[rowData._id][tmplName].template;
+      return tableInit.TabularCaches[rowData._id][tmplName].template;
     }
     // Allow the table to adjust the template context if desired
     if (typeof tmplContext === 'function') {
@@ -97,6 +97,7 @@ function templateColumnOptions({ data, render, tmpl, tmplContext }) {
         cell: cell
       };
     }
+    return ret;
   };
 
   // If we're displaying a template for this field and we've also provided data, we want to

@@ -124,7 +124,7 @@ Template.tabular.onRendered(function () {
       // Matters on the first run only.
       template.tabular.ready.set(true);
 
-      //if we are redrawing the same items in the same order, don't redraw 
+      //if we are redrawing the same items in the same order, don't redraw
       var redraw = true;
       if(template.tabular.lastData && template.tabular.data.length == template.tabular.lastData.length){
         redraw = !template.tabular.data.some(function(item, index){
