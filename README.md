@@ -557,6 +557,7 @@ if (Meteor.isClient) {
 	});
 }
 ```
+More options to translate can be found here: https://datatables.net/reference/option/language
 
 More options to translate can be found here: https://datatables.net/reference/option/language
 
