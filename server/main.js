@@ -44,7 +44,25 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
     return;
   }
 
-  return table.collection.find({_id: {$in: ids}}, {fields: fields});
+  
+  if(table.options.joins){
+    var agregate=[];
+    _.each(table.options.joins,function(v,k){
+      agregate.push({$lookup:_.pick(v,'from','localField','foreignField','as')});
+      if(v.unwind){
+        agregate.push({$unwind:{path:'$'+v.as,preserveNullAndEmptyArrays:true}});
+      }
+    });
+    agregate.push({$match:{_id: {$in: ids}}});
+    ReactiveAggregate(this, table.collection, agregate)
+  }else{
+    return table.collection.find({_id: {$in: ids}}, {fields: fields});
+  }
+
+  /*return table.collection.aggregate([{
+    $match:{_id: {$in: ids}},
+  }]);*/
+  
 });
 
 Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, limit) {
@@ -104,15 +122,31 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     findOptions.sort = sort;
   }
 
-  const filteredCursor = table.collection.find(selector, findOptions);
-
-  let filteredRecordIds = filteredCursor.map(doc => doc._id);
+  let filteredRecordIds;
+  let countRows=0;
+  let filteredCursor;
+  if(table.options.joins){
+    //agregated IDs
+    var agregate=[];
+    _.each(table.options.joins,function(v,k){
+      agregate.push({$lookup:_.pick(v,'from','localField','foreignField','as')});
+    });
+    agregate.push({$match:selector});
+    filteredCursor = table.collection.find();
+    let filteredCursorAgregated = table.collection.aggregate(agregate)
+    filteredRecordIds = filteredCursorAgregated.map(doc => doc._id);
+    countRows = filteredCursorAgregated.length;
+    //console.log(filteredRecordIds);
+  }else{
+    //IDs the regular way
+    filteredCursor = table.collection.find(selector, findOptions);
+    filteredRecordIds = filteredCursor.map(doc => doc._id);
+     countRows = filteredCursor.count();
+  }
 
   // If we are not going to count for real, in order to improve performance, then we will fake
   // the count to ensure the Next button is always available.
   const fakeCount = filteredRecordIds.length + skip + 1;
-
-  const countCursor = table.collection.find(selector, {fields: {_id: 1}});
 
   let recordReady = false;
   let updateRecords = () => {
@@ -121,7 +155,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       if (typeof table.alternativeCount === 'function') {
         currentCount = table.alternativeCount(selector);
       } else {
-        currentCount = countCursor.count();
+        currentCount = countRows;
       }
     }
 
@@ -157,6 +191,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
 
   this.ready();
 
+  
   // Handle docs being added or removed from the result set.
   let initializing = true;
   const handle = filteredCursor.observeChanges({
@@ -164,13 +199,35 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       if (initializing) return;
 
       //console.log('ADDED');
-      filteredRecordIds.push(id);
+      if(table.options.joins){
+        var agregate=[];
+        _.each(table.options.joins,function(v,k){
+          agregate.push({$lookup:_.pick(v,'from','localField','foreignField','as')});
+        });
+        agregate.push({$match:selector});
+        const filteredCursor = table.collection.aggregate(agregate)
+        filteredRecordIds = filteredCursor.map(doc => doc._id);
+        countRows = filteredCursor.length;
+      }else{
+        filteredRecordIds.push(id);
+      }
       updateRecords();
     },
     removed: function (id) {
       //console.log('REMOVED');
-      // _.findWhere is used to support Mongo ObjectIDs
-      filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id));
+      if(table.options.joins){
+        var agregate=[];
+        _.each(table.options.joins,function(v,k){
+          agregate.push({$lookup:_.pick(v,'from','localField','foreignField','as')});
+        });
+        agregate.push({$match:selector});
+        const filteredCursor = table.collection.aggregate(agregate)
+        filteredRecordIds = filteredCursor.map(doc => doc._id);
+        countRows = filteredCursor.length;
+      }else{
+        // _.findWhere is used to support Mongo ObjectIDs
+        filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id));
+      }
       updateRecords();
     }
   });

@@ -22,7 +22,8 @@ Package.onUse(function(api) {
     'templating',
     'reactive-var',
     'tracker',
-    'session'
+    'session',
+    'jcbernack:reactive-aggregate'
   ]);
 
   // jquery is a weak reference in case you want to use a different package or
