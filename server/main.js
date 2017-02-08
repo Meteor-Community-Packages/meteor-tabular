@@ -106,6 +106,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       selector = {$and: [tableSelector, selector]};
     }
   }
+  var agregate=[];
 
   const findOptions = {
     skip: skip,
@@ -117,9 +118,13 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     findOptions.limit = limit;
   }
 
+  var tempSort={};
   // `sort` may be `null`
   if (_.isArray(sort)) {
     findOptions.sort = sort;
+    _.each(sort,sort=>{
+      tempSort[sort[0]]=sort[1]==="asc"?1:-1;
+    });
   }
 
   let filteredRecordIds;
@@ -127,15 +132,19 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   let filteredCursor;
   if(table.options.joins){
     //agregated IDs
-    var agregate=[];
+    
     _.each(table.options.joins,function(v,k){
       agregate.push({$lookup:_.pick(v,'from','localField','foreignField','as')});
     });
     agregate.push({$match:selector});
+    if(!_.isEmpty(tempSort)) agregate.push({$sort:tempSort});
+    agregate.push({$skip:findOptions.skip});
+    agregate.push({$limit:findOptions.limit});
     filteredCursor = table.collection.find();
     let filteredCursorAgregated = table.collection.aggregate(agregate)
     filteredRecordIds = filteredCursorAgregated.map(doc => doc._id);
-    countRows = filteredCursorAgregated.length;
+    //countRows = filteredCursorAgregated.length;
+    countRows = filteredRecordIds.length + skip + 1;
     //console.log(filteredRecordIds);
   }else{
     //IDs the regular way
@@ -205,6 +214,9 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
           agregate.push({$lookup:_.pick(v,'from','localField','foreignField','as')});
         });
         agregate.push({$match:selector});
+        if(!_.isEmpty(tempSort)) agregate.push({$sort:tempSort});
+        agregate.push({$skip:findOptions.skip});
+        agregate.push({$limit:findOptions.limit});
         const filteredCursor = table.collection.aggregate(agregate)
         filteredRecordIds = filteredCursor.map(doc => doc._id);
         countRows = filteredCursor.length;
@@ -221,6 +233,9 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
           agregate.push({$lookup:_.pick(v,'from','localField','foreignField','as')});
         });
         agregate.push({$match:selector});
+        if(!_.isEmpty(tempSort)) agregate.push({$sort:tempSort});
+        agregate.push({$skip:findOptions.skip});
+        agregate.push({$limit:findOptions.limit});
         const filteredCursor = table.collection.aggregate(agregate)
         filteredRecordIds = filteredCursor.map(doc => doc._id);
         countRows = filteredCursor.length;
