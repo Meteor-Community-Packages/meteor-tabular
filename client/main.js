@@ -186,7 +186,7 @@ Template.tabular.onRendered(function () {
     //console.log('currentData autorun', data);
     
     // if we don't have data OR the selector didn't actually change return out
-    if (!data || template.tabular.selector === data.selector) return;
+    if (!data || (data.selector && template.tabular.selector === data.selector)) return;
 
     // We get the current TabularTable instance, and cache it on the
     // template instance for access elsewhere
