@@ -73,6 +73,8 @@ Although this appears similar to the [jquery-datatables](https://github.com/Luma
 ```bash
 $ meteor add aldeed:tabular
 ```
+## Online demo
+View a [demonstration project on Meteorpad](http://meteorpad.com/pad/xNafF9N5XJNrFJEyG/TabularDemo).
 
 ## Installing and Configuring a Theme
 
