@@ -124,14 +124,24 @@ Template.tabular.onRendered(function () {
       // Matters on the first run only.
       template.tabular.ready.set(true);
 
+      //if we are redrawing the same items in the same order, don't redraw
+      var redraw = true;
+      if(template.tabular.lastData && template.tabular.data.length == template.tabular.lastData.length){
+        redraw = !template.tabular.data.some(function(item, index){
+          return item._id == template.tabular.lastData[index]._id;
+        });
+        redraw = true;
+      }
       //console.log('ajax');
-
-      callback({
-        draw: data.draw,
-        recordsTotal: template.tabular.recordsTotal,
-        recordsFiltered: template.tabular.recordsFiltered,
-        data: template.tabular.data
-      });
+      if(redraw){
+        callback({
+          draw: data.draw,
+          recordsTotal: template.tabular.recordsTotal,
+          recordsFiltered: template.tabular.recordsFiltered,
+          data: template.tabular.data
+        });
+        template.tabular.lastData = template.tabular.data;
+      }
 
     },
     initComplete: function () {
@@ -425,7 +435,19 @@ Template.tabular.onRendered(function () {
 
     // Get the updated list of docs we should be showing
     var cursor = collection.find({_id: {$in: tableInfo.ids}}, findOptions);
-
+    cursor.observe({
+      changed(newDoc){
+        if(newDoc._id){
+          _.forEach(tableInit.TabularCaches[newDoc._id], function(item, key){
+            //the data for this template may have changed, so re-render
+            //TODO: might be better to check if the values used have changed somehow?
+            if(item.template.dataVar){
+              item.template.dataVar.set(_.extend(item.template.dataVar.get(), newDoc));
+            }
+          });
+        }
+      }
+    });
     //console.log('tableInfo, fields, sort, find autorun', cursor.count());
 
     // We're subscribing to the docs just in time, so there's
