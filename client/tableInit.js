@@ -16,7 +16,7 @@ function tableInit(tabularTable, template) {
   columns = columns.map(column => {
     let options = { ...column };
 
-    _.extend(options, templateColumnOptions(column));
+    _.extend(options, templateColumnOptions(template, column));
 
     // `templateColumnOptions` might have set defaultContent option. If not, we need it set
     // to something to protect against errors from null and undefined values.
@@ -59,7 +59,7 @@ function tableInit(tabularTable, template) {
 
 // The `tmpl` column option is special for this package. We parse it into other column options
 // and then remove it.
-function templateColumnOptions({ data, render, tmpl, tmplContext }) {
+function templateColumnOptions(template, { data, render, tmpl, tmplContext }) {
   if (!tmpl) return {};
 
   const options = {};
@@ -74,8 +74,10 @@ function templateColumnOptions({ data, render, tmpl, tmplContext }) {
     if (typeof tmplContext === 'function') {
       rowData = tmplContext(rowData);
     }
-
-    Blaze.renderWithData(tmpl, rowData, cell);
+    //this will be called by DT - let's keep track of all blazeviews it makes us create
+    let view = Blaze.renderWithData(tmpl, rowData, cell);
+    template.blazeViews.push(view);
+    return view;
   };
 
   // If we're displaying a template for this field and we've also provided data, we want to
