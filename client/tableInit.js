@@ -76,7 +76,7 @@ function templateColumnOptions(template, { data, render, tmpl, tmplContext }) {
     }
     //this will be called by DT - let's keep track of all blazeviews it makes us create
     let view = Blaze.renderWithData(tmpl, rowData, cell);
-    template.blazeViews.push(view);
+    template.tabular.blazeViews.push(view);
     return view;
   };
 
