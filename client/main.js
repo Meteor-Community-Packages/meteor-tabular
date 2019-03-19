@@ -368,6 +368,8 @@ Template.tabular.onRendered(function () {
     }
 
     // We start with an empty table.
+    // secure against xss
+    options.columns.forEach(c => {if(!c.render) c.render=$.fn.dataTable.render.text()});
     // Data will be populated by ajax function now.
     table = template.$tableElement.DataTable(options);
 
