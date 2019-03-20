@@ -26,6 +26,12 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
   check(fields, Match.Optional(Object));
 
   const table = Tabular.tablesByName[tableName];
+  
+  // enforce hard limit
+  if(table.limit && ids.length > table.limit) {
+    ids = ids.slice(0,table.limit);
+  }
+  
   if (!table) {
     // We throw an error in the other pub, so no need to throw one here
     this.ready();
@@ -88,12 +94,15 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       selector = {$and: [tableSelector, selector]};
     }
   }
-
+  
   const findOptions = {
     skip: skip,
     fields: {_id: 1}
   };
 
+  // enforce hard limit
+  if(table.limit && limit && (Math.abs(limit) > table.limit)) limit = table.limit;
+  
   // `limit` may be `null`
   if (limit > 0) {
     findOptions.limit = limit;
