@@ -56,6 +56,8 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
 Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, limit) {
   check(tableName, String);
   check(selector, Match.Optional(Match.OneOf(Object, null)));
+  // replace dangerous selector with {}
+  if (JSON.stringify(selector).includes('where')) selector = {};
   check(sort, Match.Optional(Match.OneOf(Array, null)));
   check(skip, Number);
   check(limit, Match.Optional(Match.OneOf(Number, null)));
