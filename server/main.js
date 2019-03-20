@@ -27,15 +27,15 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
 
   const table = Tabular.tablesByName[tableName];
   
-  // enforce hard limit
-  if(table.limit && ids.length > table.limit) {
-    ids = ids.slice(0,table.limit);
-  }
-  
   if (!table) {
     // We throw an error in the other pub, so no need to throw one here
     this.ready();
     return;
+  }
+    
+  // enforce hard limit
+  if(table.limit && ids.length > table.limit) {
+    ids = ids.slice(0,table.limit);
   }
 
   // Check security. We call this in both publications.
