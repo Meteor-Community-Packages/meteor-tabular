@@ -193,9 +193,9 @@ Template.tabular.onRendered(function () {
     // run
     if (tabularTable.name === lastTableName) {
       if (table) {
-        // passing `false` as the second arg tells it to
-        // reset the paging
-        table.ajax.reload(null, true);
+        // passing `true` as the second arg tells it to
+        // reset the paging, check line 243
+        table.ajax.reload(null, false);
       }
       return;
     }
