@@ -1,14 +1,15 @@
 {
+  "lockfileVersion": 1,
   "dependencies": {
     "datatables.net": {
       "version": "1.10.12",
       "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-1.10.12.tgz",
-      "from": "datatables.net@1.10.12"
+      "integrity": "sha1-1m4Ul9OfVa1vHmwquzDOGSkOMPg="
     },
     "jquery": {
       "version": "3.1.1",
       "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.1.1.tgz",
-      "from": "jquery@>=1.7.0"
+      "integrity": "sha1-NHwcIcfgBBFeCk2jLOzgQfrTyKM="
     }
   }
 }
