@@ -170,7 +170,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     removed: function (id) {
       //console.log('REMOVED');
       // _.findWhere is used to support Mongo ObjectIDs
-      filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id));
+      filteredRecordIds = typeof id === "string" ? filteredRecordIds = _.without(filteredRecordIds, id) : filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id));
       updateRecords();
     }
   });
