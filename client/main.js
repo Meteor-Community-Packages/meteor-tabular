@@ -135,23 +135,26 @@ Template.tabular.onRendered(function () {
 
     },
     initComplete: function () {
-      var options = template.tabular.options.get();
+      // Fix THOMAS modified 24.11.2021
+      // Fix the case of multiple table on the same page
+      const tableId = template.data.id;
+      const options = template.tabular.options.get();
       if (options.search && options.search.onEnterOnly) {
-        var replaceSearchLabel = function(newText){
-          $('.dataTables_filter label').contents().filter(function() {
+        const replaceSearchLabel = function(newText){
+          $('#' + tableId + '_filter label').contents().filter(function() {
             return this.nodeType === 3 && this.textContent.trim().length;
           }).replaceWith(newText);
         }
-        $('.dataTables_filter input')
+        $('#' + tableId + '_filter input')
           .unbind()
           .bind('keyup change', function (event) {
             if (!table) return;
             if (event.keyCode === 13 || this.value === '') {
-              replaceSearchLabel("Search:");
+              replaceSearchLabel(TAPi18n.__("Filter"));
               table.search(this.value).draw();
             }
             else {
-              replaceSearchLabel("Search (hit enter):");
+              replaceSearchLabel(TAPi18n.__('Press enter to filter'));
             }
           });
       }
