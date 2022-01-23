@@ -69,7 +69,8 @@ Template.tabular.onRendered(function () {
   template.tabular.recordsTotal = 0;
   template.tabular.recordsFiltered = 0;
   template.tabular.isLoading = new ReactiveVar(true);
-
+  template.tabular.blazeViews = [];
+  
   // These are some DataTables options that we need for everything to work.
   // We add them to the options specified by the user.
   const ajaxOptions = {
@@ -440,6 +441,19 @@ Template.tabular.onRendered(function () {
     // Get data as array for DataTables to consume in the ajax function
     template.tabular.data = cursor.fetch();
 
+    if (template.tabular.blazeViews) {
+      //console.log(`Removing ${template.blazeViews.length}`);
+      template.tabular.blazeViews.forEach(view => {
+        try {
+          Blaze.remove(view);
+        }
+        catch(err) {
+          console.error(err);
+        }
+      });
+      template.tabular.blazeViews = [];
+    }
+
     // For these types of reactive changes, we don't want to
     // reset the page we're on, so we pass `false` as second arg.
     // The exception is if we changed the results-per-page number,
@@ -479,6 +493,18 @@ Template.tabular.onDestroyed(function () {
       this.tabular.tableDef &&
       typeof this.tabular.tableDef.onUnload === 'function') {
     this.tabular.tableDef.onUnload();
+  }
+  if (this.tabular.blazeViews) {
+    //console.log(`Removing ${this.blazeViews.length}`);
+    this.tabular.blazeViews.forEach(view => {
+      try {
+        Blaze.remove(view);
+      }
+      catch(err) {
+        console.error(err);
+      }
+    });
+    this.tabular.blazeViews = [];
   }
 
   // Destroy the DataTable instance to avoid memory leak
