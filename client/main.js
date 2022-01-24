@@ -150,11 +150,11 @@ Template.tabular.onRendered(function () {
           .bind('keyup change', function (event) {
             if (!table) return;
             if (event.keyCode === 13 || this.value === '') {
-              replaceSearchLabel(TAPi18n.__("Filter"));
+              replaceSearchLabel(table.i18n('search'));
               table.search(this.value).draw();
             }
             else {
-              replaceSearchLabel(TAPi18n.__('Press enter to filter'));
+              replaceSearchLabel(table.i18n('Press enter to filter'));
             }
           });
       }
