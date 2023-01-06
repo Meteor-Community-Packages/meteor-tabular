@@ -3,6 +3,12 @@ aldeed:tabular
 
 A Meteor package that creates reactive [DataTables](http://datatables.net/) in an efficient way, allowing you to display the contents of enormous collections without impacting app performance.
 
+
+## !!! MAINTAINERS WANTED !!!
+
+Please open an issue if you like to help out with maintenance on this package.
+
+
 ## Table of Contents
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
