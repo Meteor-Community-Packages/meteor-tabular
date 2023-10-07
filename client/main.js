@@ -1,30 +1,32 @@
-/* global _, Template, Tabular, Tracker, ReactiveVar, Session, Meteor, */
+import './tabular.html';
+
+/* global _, Blaze, Tracker, ReactiveVar, Session, Meteor, */
 import { $ } from 'meteor/jquery';
-import dataTableInit from 'datatables.net';
+//This is a bit shit that we're initialising this explicit version within the library
+import dataTableInit from 'datatables.net-bs4';
 import { Mongo } from 'meteor/mongo';
 import { Template } from 'meteor/templating';
+
 import Tabular from '../common/Tabular';
 import tableInit from './tableInit';
 import getPubSelector from './getPubSelector';
-import { getMongoSort, objectsAreEqual, sortsAreEqual } from './util';
-
-import './tabular.html';
+import { getMongoSort, objectsAreEqual, sortsAreEqual } from '../common/util';
 
 dataTableInit(window, $);
-
 Template.registerHelper('TabularTables', Tabular.tablesByName);
-
 Tabular.tableRecords = new Mongo.Collection('tabular_records');
 Tabular.remoteTableRecords = [];
 
 Tabular.getTableRecordsCollection = function (connection) {
-  if (!connection || connection === Tabular.tableRecords._connection) return Tabular.tableRecords;
+  if (!connection || connection === Tabular.tableRecords._connection) {
+    return Tabular.tableRecords;
+  }
 
-  let remote = _.find(Tabular.remoteTableRecords, remote => remote.connection === connection);
+  let remote = _.find(Tabular.remoteTableRecords, (remote) => remote.connection === connection);
   if (!remote) {
     remote = {
       connection,
-      tableRecords: new Mongo.Collection('tabular_records', { connection }),
+      tableRecords: new Mongo.Collection('tabular_records', { connection })
     };
     Tabular.remoteTableRecords.push(remote);
   }
@@ -69,6 +71,8 @@ Template.tabular.onRendered(function () {
   template.tabular.recordsTotal = 0;
   template.tabular.recordsFiltered = 0;
   template.tabular.isLoading = new ReactiveVar(true);
+  template.tabular.blazeViews = [];
+  template.tabular.searchTerm = new ReactiveVar(this.data.searchTerm || null);
 
   // These are some DataTables options that we need for everything to work.
   // We add them to the options specified by the user.
@@ -78,7 +82,7 @@ Template.tabular.onRendered(function () {
     processing: true,
     // define the function that DataTables will call upon first load and whenever
     // we tell it to reload data, such as when paging, etc.
-    ajax: function (data, callback/*, settings*/) {
+    ajax: function (data, callback /*, settings*/) {
       // When DataTables requests data, first we set
       // the new skip, limit, order, and pubSelector values
       // that DataTables has requested. These trigger
@@ -92,11 +96,13 @@ Template.tabular.onRendered(function () {
       Session.set('Tabular.LastSkip', data.start);
 
       // Update limit
-      var options = template.tabular.options.get();
-      var hardLimit = options && options.limit;
+      let options = template.tabular.options.get();
+      let hardLimit = options && options.limit;
       if (data.length === -1) {
         if (hardLimit === undefined) {
-          console.warn('When using no paging or an "All" option with tabular, it is best to also add a hard limit in your table options like {limit: 500}');
+          console.warn(
+            'When using no paging or an "All" option with tabular, it is best to also add a hard limit in your table options like {limit: 500}'
+          );
           template.tabular.limit.set(null);
         } else {
           template.tabular.limit.set(hardLimit);
@@ -109,15 +115,19 @@ Template.tabular.onRendered(function () {
       template.tabular.sort.set(getMongoSort(data.order, options.columns));
 
       // Update pubSelector
-      const pubSelector = getPubSelector(
-        template.tabular.selector,
-        (data.search && data.search.value) || null,
-        template.tabular.searchFields,
-        template.tabular.searchCaseInsensitive,
-        template.tabular.splitSearchByWhitespace,
-        data.columns || null,
-        options.columns,
-      );
+      let pubSelector = template.tabular.selector;
+      //if we're using the customSearch functionality don't do the default client side regex via getPubSelector
+      if (!template.tabular.tableDef.customSearch) {
+        pubSelector = getPubSelector(
+          template.tabular.selector,
+          (data.search && data.search.value) || null,
+          template.tabular.searchFields,
+          template.tabular.searchCaseInsensitive,
+          template.tabular.splitSearchByWhitespace,
+          data.columns || null,
+          options.columns
+        );
+      }
       template.tabular.pubSelector.set(pubSelector);
 
       // We're ready to subscribe to the data.
@@ -132,7 +142,6 @@ Template.tabular.onRendered(function () {
         recordsFiltered: template.tabular.recordsFiltered,
         data: template.tabular.data
       });
-
     },
     initComplete: function () {
       // Fix THOMAS modified 24.11.2021
@@ -140,11 +149,14 @@ Template.tabular.onRendered(function () {
       const tableId = template.data.id;
       const options = template.tabular.options.get();
       if (options.search && options.search.onEnterOnly) {
-        const replaceSearchLabel = function(newText){
-          $('#' + tableId + '_filter label').contents().filter(function() {
-            return this.nodeType === 3 && this.textContent.trim().length;
-          }).replaceWith(newText);
-        }
+        const replaceSearchLabel = function (newText) {
+          $('#' + tableId + '_filter label')
+            .contents()
+            .filter(function () {
+              return this.nodeType === 3 && this.textContent.trim().length;
+            })
+            .replaceWith(newText);
+        };
         $('#' + tableId + '_filter input')
           .unbind()
           .bind('keyup change', function (event) {
@@ -152,8 +164,7 @@ Template.tabular.onRendered(function () {
             if (event.keyCode === 13 || this.value === '') {
               replaceSearchLabel(table.i18n('search'));
               table.search(this.value).draw();
-            }
-            else {
+            } else {
               replaceSearchLabel(table.i18n('Press enter to filter'));
             }
           });
@@ -163,17 +174,19 @@ Template.tabular.onRendered(function () {
       const options = template.tabular.options.get();
       const columns = options.columns;
 
-      $(headerRow).find('td,th').each((index, headerCell) => {
-        const titleFunction = columns[index] && columns[index].titleFn;
-        if (typeof titleFunction === 'function') {
-          headerCell.innerHTML = '';
-          if (headerCell.__blazeViewInstance) {
-            Blaze.remove(headerCell.__blazeViewInstance);
+      $(headerRow)
+        .find('td,th')
+        .each((index, headerCell) => {
+          const titleFunction = columns[index] && columns[index].titleFn;
+          if (typeof titleFunction === 'function') {
+            headerCell.innerHTML = '';
+            if (headerCell.__blazeViewInstance) {
+              Blaze.remove(headerCell.__blazeViewInstance);
+            }
+            const view = new Blaze.View(titleFunction);
+            headerCell.__blazeViewInstance = Blaze.render(view, headerCell);
           }
-          const view = new Blaze.View(titleFunction);
-          headerCell.__blazeViewInstance = Blaze.render(view, headerCell);
-        }
-      });
+        });
     }
   };
 
@@ -182,25 +195,28 @@ Template.tabular.onRendered(function () {
 
   // Reactively determine table columns, fields, and searchFields.
   // This will rerun whenever the current template data changes.
-  var lastTableName;
+  let lastTableName;
   template.autorun(function () {
-    var data = Template.currentData();
+    let data = Template.currentData();
 
     //console.log('currentData autorun', data);
-    
+
     // if we don't have data OR the selector didn't actually change return out
-    if (!data || (data.selector && template.tabular.selector === data.selector)) return;
+    if (!data || (data.selector && template.tabular.selector === data.selector)) {
+      return;
+    }
 
     // We get the current TabularTable instance, and cache it on the
     // template instance for access elsewhere
-    var tabularTable = template.tabular.tableDef = data.table;
+    let tabularTable = (template.tabular.tableDef = data.table);
 
     if (!(tabularTable instanceof Tabular.Table)) {
-      throw new Error("You must pass Tabular.Table instance as the table attribute");
+      throw new Error('You must pass Tabular.Table instance as the table attribute');
     }
 
     // Always update the selector reactively
     template.tabular.selector = data.selector;
+    template.tabular.searchTerm.set(data.searchTerm || null);
 
     // The remaining stuff relates to changing the `table`
     // attribute. If we didn't change it, we can stop here,
@@ -218,7 +234,7 @@ Template.tabular.onRendered(function () {
     // If we reactively changed the `table` attribute, run
     // onUnload for the previous table
     if (lastTableName !== undefined) {
-      var lastTableDef = Tabular.tablesByName[lastTableName];
+      let lastTableDef = Tabular.tablesByName[lastTableName];
       if (lastTableDef && typeof lastTableDef.onUnload === 'function') {
         lastTableDef.onUnload();
       }
@@ -244,7 +260,7 @@ Template.tabular.onRendered(function () {
     }
     template.tabular.options.set({
       ...tabularTable.options,
-      columns,
+      columns
     });
     template.tabular.tableName.set(tabularTable.name);
     template.tabular.docPub.set(tabularTable.pub);
@@ -270,6 +286,7 @@ Template.tabular.onRendered(function () {
     template.tabular.skip.get();
     template.tabular.limit.get();
     template.tabular.isLoading.set(true);
+    template.tabular.searchTerm.get();
   });
 
   // First Subscription
@@ -280,7 +297,9 @@ Template.tabular.onRendered(function () {
   // It's not necessary to call stop
   // on subscriptions that are within autorun computations.
   template.autorun(function () {
-    if (!template.tabular.ready.get()) return;
+    if (!template.tabular.ready.get()) {
+      return;
+    }
 
     //console.log('tabular_getInfo autorun');
 
@@ -288,16 +307,17 @@ Template.tabular.onRendered(function () {
       template.tabular.isLoading.set(false);
     }
 
-    var connection = template.tabular.connection;
-    var context = connection || Meteor;
+    let connection = template.tabular.connection;
+    let context = connection || Meteor;
     context.subscribe(
-      "tabular_getInfo",
+      'tabular_getInfo',
       template.tabular.tableName.get(),
       template.tabular.pubSelector.get(),
       template.tabular.sort.get(),
       template.tabular.skip.get(),
       template.tabular.limit.get(),
-      onReady,
+      template.tabular.searchTerm.get(),
+      onReady
     );
   });
 
@@ -310,9 +330,9 @@ Template.tabular.onRendered(function () {
     // list of docs that should currently be in the table changes.
     // It does not cause reruns based on the documents themselves
     // changing.
-    var tableName = template.tabular.tableName.get();
-    var collection = template.tabular.collection.get();
-    var tableInfo = Tabular.getRecord(tableName, collection) || {};
+    let tableName = template.tabular.tableName.get();
+    let collection = template.tabular.collection.get();
+    let tableInfo = Tabular.getRecord(tableName, collection) || {};
 
     //console.log('tableName and tableInfo autorun', tableName, tableInfo);
 
@@ -320,14 +340,16 @@ Template.tabular.onRendered(function () {
     template.tabular.recordsFiltered = tableInfo.recordsFiltered || 0;
 
     // In some cases, there is no point in subscribing to nothing
-    if (_.isEmpty(tableInfo) ||
-        template.tabular.recordsTotal === 0 ||
-        template.tabular.recordsFiltered === 0) {
+    if (
+      _.isEmpty(tableInfo) ||
+      template.tabular.recordsTotal === 0 ||
+      template.tabular.recordsFiltered === 0
+    ) {
       return;
     }
 
     // Extend with extraFields from table definition
-    var fields = template.tabular.fields;
+    let fields = template.tabular.fields;
     if (fields) {
       // Extend with extraFields from table definition
       if (typeof template.tabular.tableDef.extraFields === 'object') {
@@ -346,7 +368,7 @@ Template.tabular.onRendered(function () {
   // Build the table. We rerun this only when the table
   // options specified by the user changes, which should be
   // only when the `table` attribute changes reactively.
-  template.autorun(c => {
+  template.autorun((c) => {
     const userOptions = template.tabular.options.get();
     const options = _.extend({}, ajaxOptions, userOptions);
 
@@ -361,12 +383,16 @@ Template.tabular.onRendered(function () {
       });
     }
 
-    if (!('order' in options)) options.order = [];
+    if (!('order' in options)) {
+      options.order = [];
+    }
 
     // After the first time, we need to destroy before rebuilding.
     if (table) {
-      var dt = template.$tableElement.DataTable();
-      if (dt) dt.destroy();
+      let dt = template.$tableElement.DataTable();
+      if (dt) {
+        dt.destroy();
+      }
       template.$tableElement.empty();
     }
 
@@ -382,11 +408,11 @@ Template.tabular.onRendered(function () {
 
   template.autorun(() => {
     // Get table name non-reactively
-    var tableName = Tracker.nonreactive(function () {
+    let tableName = Tracker.nonreactive(function () {
       return template.tabular.tableName.get();
     });
     // Get the collection that we're showing in the table non-reactively
-    var collection = Tracker.nonreactive(function () {
+    let collection = Tracker.nonreactive(function () {
       return template.tabular.collection.get();
     });
 
@@ -399,16 +425,17 @@ Template.tabular.onRendered(function () {
     // * `selector` attribute changed reactively
     // * Docs were added/changed/removed by this user or
     //   another user, causing visible result set to change.
-    var tableInfo = Tabular.getRecord(tableName, collection);
-
-    if (!collection || !tableInfo) return;
+    let tableInfo = Tabular.getRecord(tableName, collection);
+    if (!collection || !tableInfo) {
+      return;
+    }
 
     // Build options object to pass to `find`.
     // It's important that we use the same options
     // that were used in generating the list of `_id`s
     // on the server.
-    var findOptions = {};
-    var fields = template.tabular.fields;
+    let findOptions = {};
+    let fields = template.tabular.fields;
     if (fields) {
       // Extend with extraFields from table definition
       if (typeof template.tabular.tableDef.extraFields === 'object') {
@@ -419,7 +446,7 @@ Template.tabular.onRendered(function () {
 
     // Sort does not need to be reactive here; using
     // reactive sort would result in extra rerunning.
-    var sort = Tracker.nonreactive(function () {
+    let sort = Tracker.nonreactive(function () {
       return template.tabular.sort.get();
     });
     if (sort) {
@@ -427,7 +454,7 @@ Template.tabular.onRendered(function () {
     }
 
     // Get the updated list of docs we should be showing
-    var cursor = collection.find({_id: {$in: tableInfo.ids}}, findOptions);
+    let cursor = collection.find({ _id: { $in: tableInfo.ids } }, findOptions);
 
     //console.log('tableInfo, fields, sort, find autorun', cursor.count());
 
@@ -438,10 +465,23 @@ Template.tabular.onRendered(function () {
     // from the server, and eventually we'll have them all.
     // Without this check in here, there's a lot of flashing in the
     // table as rows are added.
-    if (cursor.count() < tableInfo.ids.length) return;
-
+    if (cursor.count() < tableInfo.ids.length) {
+      return;
+    }
     // Get data as array for DataTables to consume in the ajax function
     template.tabular.data = cursor.fetch();
+
+    if (template.tabular.blazeViews) {
+      //console.log(`Removing ${template.blazeViews.length}`);
+      template.tabular.blazeViews.forEach((view) => {
+        try {
+          Blaze.remove(view);
+        } catch (err) {
+          console.error(err);
+        }
+      });
+      template.tabular.blazeViews = [];
+    }
 
     // For these types of reactive changes, we don't want to
     // reset the page we're on, so we pass `false` as second arg.
@@ -478,16 +518,31 @@ Template.tabular.onDestroyed(function () {
   // Clear last skip tracking
   Session.set('Tabular.LastSkip', 0);
   // Run a user-provided onUnload function
-  if (this.tabular &&
-      this.tabular.tableDef &&
-      typeof this.tabular.tableDef.onUnload === 'function') {
+  if (
+    this.tabular &&
+    this.tabular.tableDef &&
+    typeof this.tabular.tableDef.onUnload === 'function'
+  ) {
     this.tabular.tableDef.onUnload();
+  }
+  if (this.tabular && this.tabular.blazeViews) {
+    //console.log(`Removing ${this.blazeViews.length}`);
+    this.tabular.blazeViews.forEach((view) => {
+      try {
+        Blaze.remove(view);
+      } catch (err) {
+        console.error(err);
+      }
+    });
+    this.tabular.blazeViews = [];
   }
 
   // Destroy the DataTable instance to avoid memory leak
-  if (this.$tableElement.length) {
+  if (this.$tableElement && this.$tableElement.length) {
     const dt = this.$tableElement.DataTable();
-    if (dt) dt.destroy();
+    if (dt) {
+      dt.destroy();
+    }
     this.$tableElement.empty();
   }
 });

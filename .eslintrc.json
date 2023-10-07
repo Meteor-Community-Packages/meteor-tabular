@@ -1,0 +1,37 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "jquery": true
+  },
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "requireConfigFile": false,
+    "ecmaVersion": 2020,
+      "ecmaFeatures": {
+          "jsx": true
+      },
+      "sourceType": "module",
+      "allowImportExportEverywhere": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended"
+  ],
+  "plugins": [
+    "prettier"
+  ],
+  "rules": {
+    "prettier/prettier": [
+        "error",
+        {
+            "tabWidth": 2,
+            "printWidth": 100,
+            "trailingComma": "none",
+            "singleQuote": true
+        }
+    ],
+    "space-before-function-paren:": 0
+  }
+}

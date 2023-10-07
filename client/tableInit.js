@@ -1,6 +1,6 @@
 import { Blaze } from 'meteor/blaze';
 import { _ } from 'meteor/underscore';
-import { cleanFieldName, cleanFieldNameForSearch } from './util';
+import { cleanFieldName, cleanFieldNameForSearch } from '../common/util';
 
 /**
  * Uses the Tabular.Table instance to get the columns, fields, and searchFields
@@ -13,10 +13,10 @@ function tableInit(tabularTable, template) {
 
   // Loop through the provided columns object
   let columns = tabularTable.options.columns || [];
-  columns = columns.map(column => {
-    let options = { ...column };
+  columns = columns.map((column) => {
+    const options = { ...column };
 
-    _.extend(options, templateColumnOptions(column));
+    _.extend(options, templateColumnOptions(template, column));
 
     // `templateColumnOptions` might have set defaultContent option. If not, we need it set
     // to something to protect against errors from null and undefined values.
@@ -34,7 +34,9 @@ function tableInit(tabularTable, template) {
       // DataTables says default value for col.searchable is `true`,
       // so we will search on all columns that haven't been set to
       // `false`.
-      if (options.searchable !== false) searchFields.push(cleanFieldNameForSearch(data));
+      if (options.searchable !== false) {
+        searchFields.push(cleanFieldNameForSearch(data));
+      }
     }
 
     // If `titleFn` option is provided, we set `title` option to the string
@@ -49,18 +51,19 @@ function tableInit(tabularTable, template) {
 
     return options;
   });
-
   template.tabular.columns = columns;
   template.tabular.fields = fields;
   template.tabular.searchFields = searchFields;
 
   return columns;
-};
+}
 
 // The `tmpl` column option is special for this package. We parse it into other column options
 // and then remove it.
-function templateColumnOptions({ data, render, tmpl, tmplContext }) {
-  if (!tmpl) return {};
+function templateColumnOptions(template, { data, render, tmpl, tmplContext }) {
+  if (!tmpl) {
+    return {};
+  }
 
   const options = {};
 
@@ -75,7 +78,10 @@ function templateColumnOptions({ data, render, tmpl, tmplContext }) {
       rowData = tmplContext(rowData);
     }
 
-    Blaze.renderWithData(tmpl, rowData, cell);
+    const view = Blaze.renderWithData(tmpl, rowData, cell);
+    //keep track of the views we create so we can cleanup later
+    template.tabular.blazeViews.push(view);
+    return view;
   };
 
   // If we're displaying a template for this field and we've also provided data, we want to
@@ -84,7 +90,7 @@ function templateColumnOptions({ data, render, tmpl, tmplContext }) {
   // we're rendering a template there with Blaze. We can prevent this issue by having the "render"
   // function return an empty string for display content.
   if (data && !render) {
-    options.render = (data, type) => (type === 'display') ? '' : data;
+    options.render = (data, type) => (type === 'display' ? '' : data);
   }
 
   return options;

@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 import { _ } from 'meteor/underscore';
 import Tabular from '../common/Tabular';
+import { getSearchPaths, getTokens, transformSortArray } from '../common/util';
 
 /*
  * These are the two publications used by TabularTable.
@@ -44,19 +45,22 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
     return;
   }
 
-  return table.collection.find({_id: {$in: ids}}, {fields: fields});
+  return table.collection.find({ _id: { $in: ids } }, { fields: fields });
 });
 
-Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, limit) {
+Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, limit, searchTerm) {
   check(tableName, String);
   check(selector, Match.Optional(Match.OneOf(Object, null)));
   check(sort, Match.Optional(Match.OneOf(Array, null)));
   check(skip, Number);
   check(limit, Match.Optional(Match.OneOf(Number, null)));
+  check(searchTerm, Match.Optional(Match.OneOf(String, null)));
 
   const table = Tabular.tablesByName[tableName];
   if (!table) {
-    throw new Error(`No TabularTable defined with the name "${tableName}". Make sure you are defining your TabularTable in common code.`);
+    throw new Error(
+      `No TabularTable defined with the name "${tableName}". Make sure you are defining your TabularTable in common code.`
+    );
   }
 
   // Check security. We call this in both publications.
@@ -69,11 +73,11 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     return;
   }
 
-  selector = selector || {};
+  let newSelector = selector || {};
 
   // Allow the user to modify the selector before we use it
   if (typeof table.changeSelector === 'function') {
-    selector = table.changeSelector(selector, this.userId);
+    newSelector = table.changeSelector(newSelector, this.userId);
   }
 
   // Apply the server side selector specified in the tabular
@@ -82,46 +86,69 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   // the same keys.
   if (typeof table.selector === 'function') {
     const tableSelector = table.selector(this.userId);
-    if (_.isEmpty(selector)) {
-      selector = tableSelector;
+    if (_.isEmpty(newSelector)) {
+      newSelector = tableSelector;
     } else {
-      selector = {$and: [tableSelector, selector]};
+      newSelector = { $and: [tableSelector, newSelector] };
     }
   }
 
   const findOptions = {
     skip: skip,
-    fields: {_id: 1}
+    fields: { _id: 1 }
   };
 
   // `limit` may be `null`
   if (limit > 0) {
-    findOptions.limit = limit;
+    findOptions.limit = table.skipCount ? limit + 1 : limit;
   }
 
   // `sort` may be `null`
   if (_.isArray(sort)) {
     findOptions.sort = sort;
   }
+  let filteredCursor;
+  let filteredRecordIds;
+  let countCursor;
+  let tokens = getTokens(searchTerm);
+  //only enter this path if we really have a search to perform
+  if (tokens?.length && typeof table.customSearch === 'function') {
+    const paths = getSearchPaths(table);
+    const newSort = transformSortArray(findOptions.sort);
 
-  const filteredCursor = table.collection.find(selector, findOptions);
+    filteredRecordIds = table.customSearch(
+      this.userId,
+      newSelector,
+      tokens,
+      paths,
+      newSort,
+      skip,
+      limit
+    );
+  } else {
+    filteredCursor = table.collection.find(newSelector, findOptions);
 
-  let filteredRecordIds = filteredCursor.map(doc => doc._id);
-
-  // If we are not going to count for real, in order to improve performance, then we will fake
-  // the count to ensure the Next button is always available.
-  const fakeCount = filteredRecordIds.length + skip + 1;
-
-  const countCursor = table.collection.find(selector, {fields: {_id: 1}});
-
+    filteredRecordIds = filteredCursor.map((doc) => doc._id);
+    countCursor = table.collection.find(newSelector, { fields: { _id: 1 } });
+  }
+  let fakeCount;
+  //if the number of results is greater than the limit then we need to remove the last one
+  //and set the fake count to the limit + skip
+  if (filteredRecordIds.length > limit) {
+    //keep only first $limit records in filteredRecordIds
+    fakeCount = filteredRecordIds.length + skip;
+    filteredRecordIds.splice(limit, filteredRecordIds.length - limit);
+  } else {
+    fakeCount = filteredRecordIds.length + skip;
+  }
   let recordReady = false;
   let updateRecords = () => {
     let currentCount;
     if (!table.skipCount) {
       if (typeof table.alternativeCount === 'function') {
-        currentCount = table.alternativeCount(selector);
+        currentCount = table.alternativeCount(newSelector);
       } else {
-        currentCount = countCursor.count();
+        currentCount = countCursor ? countCursor.count() : fakeCount;
       }
     }
 
@@ -146,7 +173,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       this.added('tabular_records', tableName, record);
       recordReady = true;
     }
-  }
+  };
 
   if (table.throttleRefresh) {
     // Why Meteor.bindEnvironment? See https://github.com/aldeed/meteor-tabular/issues/278#issuecomment-217318112
@@ -159,9 +186,11 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
 
   // Handle docs being added or removed from the result set.
   let initializing = true;
-  const handle = filteredCursor.observeChanges({
+  const handle = filteredCursor?.observeChanges({
     added: function (id) {
-      if (initializing) return;
+      if (initializing) {
+        return;
+      }
 
       //console.log('ADDED');
       filteredRecordIds.push(id);
@@ -170,7 +199,10 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     removed: function (id) {
       //console.log('REMOVED');
       // _.findWhere is used to support Mongo ObjectIDs
-      filteredRecordIds = typeof id === "string" ? filteredRecordIds = _.without(filteredRecordIds, id) : filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id));
+      filteredRecordIds =
+        typeof id === 'string'
+          ? (filteredRecordIds = _.without(filteredRecordIds, id))
+          : (filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id)));
       updateRecords();
     }
   });
@@ -187,7 +219,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   // care of sending the client any removed messages.
   this.onStop(() => {
     Meteor.clearInterval(interval);
-    handle.stop();
+    handle?.stop();
   });
 });
 

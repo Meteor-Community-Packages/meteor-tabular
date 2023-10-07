@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
+import { _ } from 'meteor/underscore';
 
 const Tabular = {};
 
@@ -7,12 +8,23 @@ Tabular.tablesByName = {};
 
 Tabular.Table = class {
   constructor(options) {
-    if (!options) throw new Error('Tabular.Table options argument is required');
-    if (!options.name) throw new Error('Tabular.Table options must specify name');
-    if (!options.columns) throw new Error('Tabular.Table options must specify columns');
-    if (!(options.collection instanceof Mongo.Collection
-      || options.collection instanceof Mongo.constructor // Fix: error if `collection: Meteor.users`
-    )) {
+    if (!options) {
+      throw new Error('Tabular.Table options argument is required');
+    }
+    if (!options.name) {
+      throw new Error('Tabular.Table options must specify name');
+    }
+    if (!options.columns) {
+      throw new Error('Tabular.Table options must specify columns');
+    }
+    if (
+      !(
+        (
+          options.collection instanceof Mongo.Collection ||
+          options.collection instanceof Mongo.constructor
+        ) // Fix: error if `collection: Meteor.users`
+      )
+    ) {
       throw new Error('Tabular.Table options must specify collection');
     }
 
@@ -29,13 +41,15 @@ Tabular.Table = class {
     this.allow = options.allow;
     this.allowFields = options.allowFields;
     this.changeSelector = options.changeSelector;
+    this.customSearch = options.customSearch;
     this.throttleRefresh = options.throttleRefresh;
     this.alternativeCount = options.alternativeCount;
     this.skipCount = options.skipCount;
+    this.extraSearchFields = options.extraSearchFields;
 
     if (_.isArray(options.extraFields)) {
       const fields = {};
-      _.each(options.extraFields, fieldName => {
+      _.each(options.extraFields, (fieldName) => {
         fields[fieldName] = 1;
       });
       this.extraFields = fields;
@@ -52,8 +66,10 @@ Tabular.Table = class {
       'allow',
       'allowFields',
       'changeSelector',
+      'customSearch',
       'throttleRefresh',
       'extraFields',
+      'extraSearchFields',
       'alternativeCount',
       'skipCount',
       'name',
@@ -62,6 +78,6 @@ Tabular.Table = class {
 
     Tabular.tablesByName[this.name] = this;
   }
-}
+};
 
 export default Tabular;
