@@ -63,6 +63,7 @@ Package.onTest(function(api) {
   api.addFiles('tests/reusedFunctions.js', 'client');
   api.addFiles([
     'tests/util.js',
+    'tests/sanitize.js',
     'tests/mongoDBQuery.js',
     'tests/utilIntegration.js'
   ], 'client' );

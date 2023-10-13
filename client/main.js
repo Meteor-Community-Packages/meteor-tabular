@@ -35,6 +35,38 @@ Tabular.getRecord = function (name, collection) {
   return Tabular.getTableRecordsCollection(collection._connection).findOne(name);
 };
 
+Tabular.sanitize = function (data) {
+  // Sanitizer function to escape HTML entities
+  const _escapeHTML = (unsafe) => {
+    return unsafe.replace(/[&<"']/g, (match) => {
+      switch (match) {
+        case '&':
+          return '&amp;';
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '"':
+          return '&quot;';
+        case "'":
+          return '&#039;';
+        default:
+          return match;
+      }
+    });
+  };
+
+  for (const element of data) {
+    for (const key in element) {
+      if (element.hasOwnProperty(key)) {
+        element[key] = _escapeHTML(element[key].toString());
+      }
+    }
+  }
+
+  return data;
+};
+
 Template.tabular.helpers({
   atts() {
     // We remove the "table" and "selector" attributes and assume the rest belong
@@ -85,6 +117,7 @@ Template.tabular.onRendered(function () {
       // the first subscription, which will then trigger the
       // second subscription.
 
+      template.tabular.data = Tabular.sanitize(template.tabular.data);
       //console.log('data', template.tabular.data);
 
       // Update skip
@@ -187,7 +220,7 @@ Template.tabular.onRendered(function () {
     var data = Template.currentData();
 
     //console.log('currentData autorun', data);
-    
+
     // if we don't have data OR the selector didn't actually change return out
     if (!data || (data.selector && template.tabular.selector === data.selector)) return;
 
