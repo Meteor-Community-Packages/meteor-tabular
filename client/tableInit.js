@@ -13,7 +13,12 @@ function tableInit(tabularTable, template) {
 
   // Loop through the provided columns object
   let columns = tabularTable.options.columns || [];
-  columns = columns.map((column) => {
+  
+  if (typeof columns === 'function') {
+    columns = tabularTable.options.columns();
+  }
+
+  columns = columns.map(column => {
     const options = { ...column };
 
     _.extend(options, templateColumnOptions(template, column));
