@@ -36,8 +36,26 @@ Tabular.getRecord = function (name, collection) {
 };
 
 Tabular.sanitize = function (data) {
-  // Sanitizer function to escape HTML entities
-  const _escapeHTML = (unsafe) => {
+  const _sanitizeJson = (unsafe) => {
+    if (typeof unsafe !== 'string') {
+      return unsafe;
+    }
+
+    return unsafe.replace(/[&<"']/g, (match) => {
+      switch (match) {
+        case '&':
+          return '&amp;';
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        default:
+          return match;
+      }
+    });
+  };
+
+  const _sanitizeString = (unsafe) => {
     return unsafe.replace(/[&<"']/g, (match) => {
       switch (match) {
         case '&':
@@ -56,15 +74,35 @@ Tabular.sanitize = function (data) {
     });
   };
 
-  for (const element of data) {
-    for (const key in element) {
-      if (element.hasOwnProperty(key)) {
-        element[key] = _escapeHTML(element[key].toString());
-      }
-    }
-  }
+  const _isJson = function (value) {
+    value = typeof value !== 'string'
+      ? JSON.stringify(value)
+      : value;
 
-  return data;
+    try {
+      value = JSON.parse(value);
+    } catch (e) {
+      return false;
+    }
+
+    return typeof value === 'object' && value !== null;
+  };
+
+  const sanitizeData = (unsafeArray) => {
+    unsafeArray.forEach(unsafeObject => {
+      for (const key in unsafeObject) {
+        if (_isJson(unsafeObject[key])) {
+          unsafeObject[key] = _sanitizeJson(unsafeObject[key]);
+        } else if (typeof unsafeObject[key] === 'string') {
+          unsafeObject[key] = _sanitizeString(unsafeObject[key]);
+        }
+      }
+    });
+
+    return unsafeArray;
+  };
+
+  return sanitizeData(data);
 };
 
 Template.tabular.helpers({
@@ -179,17 +217,17 @@ Template.tabular.onRendered(function () {
           }).replaceWith(newText);
         }
         $('#' + tableId + '_filter input')
-          .unbind()
-          .bind('keyup change', function (event) {
-            if (!table) return;
-            if (event.keyCode === 13 || this.value === '') {
-              replaceSearchLabel(table.i18n('search'));
-              table.search(this.value).draw();
-            }
-            else {
-              replaceSearchLabel(table.i18n('Press enter to filter'));
-            }
-          });
+        .unbind()
+        .bind('keyup change', function (event) {
+          if (!table) return;
+          if (event.keyCode === 13 || this.value === '') {
+            replaceSearchLabel(table.i18n('search'));
+            table.search(this.value).draw();
+          }
+          else {
+            replaceSearchLabel(table.i18n('Press enter to filter'));
+          }
+        });
       }
     },
     headerCallback(headerRow) {
@@ -354,8 +392,8 @@ Template.tabular.onRendered(function () {
 
     // In some cases, there is no point in subscribing to nothing
     if (_.isEmpty(tableInfo) ||
-        template.tabular.recordsTotal === 0 ||
-        template.tabular.recordsFiltered === 0) {
+      template.tabular.recordsTotal === 0 ||
+      template.tabular.recordsFiltered === 0) {
       return;
     }
 
@@ -512,8 +550,8 @@ Template.tabular.onDestroyed(function () {
   Session.set('Tabular.LastSkip', 0);
   // Run a user-provided onUnload function
   if (this.tabular &&
-      this.tabular.tableDef &&
-      typeof this.tabular.tableDef.onUnload === 'function') {
+    this.tabular.tableDef &&
+    typeof this.tabular.tableDef.onUnload === 'function') {
     this.tabular.tableDef.onUnload();
   }
 
