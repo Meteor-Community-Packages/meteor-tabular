@@ -35,6 +35,76 @@ Tabular.getRecord = function (name, collection) {
   return Tabular.getTableRecordsCollection(collection._connection).findOne(name);
 };
 
+Tabular.sanitize = function (data) {
+  const _sanitizeJson = (unsafe) => {
+    if (typeof unsafe !== 'string') {
+      return unsafe;
+    }
+
+    return unsafe.replace(/[&<"']/g, (match) => {
+      switch (match) {
+        case '&':
+          return '&amp;';
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        default:
+          return match;
+      }
+    });
+  };
+
+  const _sanitizeString = (unsafe) => {
+    return unsafe.replace(/[&<"']/g, (match) => {
+      switch (match) {
+        case '&':
+          return '&amp;';
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '"':
+          return '&quot;';
+        case "'":
+          return '&#039;';
+        default:
+          return match;
+      }
+    });
+  };
+
+  const _isJson = function (value) {
+    value = typeof value !== 'string'
+      ? JSON.stringify(value)
+      : value;
+
+    try {
+      value = JSON.parse(value);
+    } catch (e) {
+      return false;
+    }
+
+    return typeof value === 'object' && value !== null;
+  };
+
+  const sanitizeData = (unsafeArray) => {
+    unsafeArray.forEach(unsafeObject => {
+      for (const key in unsafeObject) {
+        if (_isJson(unsafeObject[key])) {
+          unsafeObject[key] = _sanitizeJson(unsafeObject[key]);
+        } else if (typeof unsafeObject[key] === 'string') {
+          unsafeObject[key] = _sanitizeString(unsafeObject[key]);
+        }
+      }
+    });
+
+    return unsafeArray;
+  };
+
+  return sanitizeData(data);
+};
+
 Template.tabular.helpers({
   atts() {
     // We remove the "table" and "selector" attributes and assume the rest belong
@@ -85,6 +155,7 @@ Template.tabular.onRendered(function () {
       // the first subscription, which will then trigger the
       // second subscription.
 
+      template.tabular.data = Tabular.sanitize(template.tabular.data);
       //console.log('data', template.tabular.data);
 
       // Update skip
@@ -187,7 +258,6 @@ Template.tabular.onRendered(function () {
     var data = Template.currentData();
 
     //console.log('currentData autorun', data);
-    
     // if we don't have data OR the selector didn't actually change return out
     if (!data || (data.selector && template.tabular.selector === data.selector)) return;
 

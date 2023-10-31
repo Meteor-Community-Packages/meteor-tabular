@@ -377,6 +377,22 @@ TabularTables.Books = new Tabular.Table({
 
 If you need to be sure that certain fields are never published or if different users can access different fields, use `allowFields`. Otherwise just use `allow`.
 
+*XSS: Tabular sanitizes strings completely and objects partially. If you are trying to render an object as data, you should take required actions to prevent XSS.*
+```js
+{
+  title: 'Customer',
+  data: 'customer', // an object
+  render(data){
+    if (!data) {
+      return '';
+    }
+
+    const name = yourSanitizeFunction(data.name);
+    return `<a href="/customer/${data._id}">${name}}</a>`;
+  }
+}
+```
+
 ## Caching the Documents
 
 By default, a normal `Meteor.subscribe` is used for the current page's table data. This subscription is stopped and a new one replaces it whenever you switch pages. This means that if your table shows 10 results per page, your client collection will have 10 documents in it on page 1. When you switch to page 2, your client collection will still have only 10 documents in it, but they will be the next 10.
