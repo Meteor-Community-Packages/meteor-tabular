@@ -217,17 +217,17 @@ Template.tabular.onRendered(function () {
           }).replaceWith(newText);
         }
         $('#' + tableId + '_filter input')
-        .unbind()
-        .bind('keyup change', function (event) {
-          if (!table) return;
-          if (event.keyCode === 13 || this.value === '') {
-            replaceSearchLabel(table.i18n('search'));
-            table.search(this.value).draw();
-          }
-          else {
-            replaceSearchLabel(table.i18n('Press enter to filter'));
-          }
-        });
+          .unbind()
+          .bind('keyup change', function (event) {
+            if (!table) return;
+            if (event.keyCode === 13 || this.value === '') {
+              replaceSearchLabel(table.i18n('search'));
+              table.search(this.value).draw();
+            }
+            else {
+              replaceSearchLabel(table.i18n('Press enter to filter'));
+            }
+          });
       }
     },
     headerCallback(headerRow) {
@@ -258,7 +258,6 @@ Template.tabular.onRendered(function () {
     var data = Template.currentData();
 
     //console.log('currentData autorun', data);
-
     // if we don't have data OR the selector didn't actually change return out
     if (!data || (data.selector && template.tabular.selector === data.selector)) return;
 
@@ -392,8 +391,8 @@ Template.tabular.onRendered(function () {
 
     // In some cases, there is no point in subscribing to nothing
     if (_.isEmpty(tableInfo) ||
-      template.tabular.recordsTotal === 0 ||
-      template.tabular.recordsFiltered === 0) {
+        template.tabular.recordsTotal === 0 ||
+        template.tabular.recordsFiltered === 0) {
       return;
     }
 
@@ -550,8 +549,8 @@ Template.tabular.onDestroyed(function () {
   Session.set('Tabular.LastSkip', 0);
   // Run a user-provided onUnload function
   if (this.tabular &&
-    this.tabular.tableDef &&
-    typeof this.tabular.tableDef.onUnload === 'function') {
+      this.tabular.tableDef &&
+      typeof this.tabular.tableDef.onUnload === 'function') {
     this.tabular.tableDef.onUnload();
   }
 
