@@ -41,11 +41,11 @@ Tabular.Table = class {
     this.allow = options.allow;
     this.allowFields = options.allowFields;
     this.changeSelector = options.changeSelector;
-    this.customSearch = options.customSearch;
     this.throttleRefresh = options.throttleRefresh;
     this.alternativeCount = options.alternativeCount;
     this.skipCount = options.skipCount;
-    this.extraSearchFields = options.extraSearchFields;
+    this.searchCustom = options.searchCustom;
+    this.searchExtraFields = options.searchExtraFields;
 
     if (_.isArray(options.extraFields)) {
       const fields = {};
@@ -56,7 +56,6 @@ Tabular.Table = class {
     }
 
     this.selector = options.selector;
-
     this.options = _.omit(
       options,
       'collection',
@@ -66,10 +65,10 @@ Tabular.Table = class {
       'allow',
       'allowFields',
       'changeSelector',
-      'customSearch',
+      'searchCustom',
       'throttleRefresh',
       'extraFields',
-      'extraSearchFields',
+      'searchExtraFields',
       'alternativeCount',
       'skipCount',
       'name',

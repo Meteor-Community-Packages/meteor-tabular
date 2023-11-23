@@ -116,8 +116,8 @@ Template.tabular.onRendered(function () {
 
       // Update pubSelector
       let pubSelector = template.tabular.selector;
-      //if we're using the customSearch functionality don't do the default client side regex via getPubSelector
-      if (!template.tabular.tableDef.customSearch) {
+      //if we're using the searchCustom functionality don't do the default client side regex via getPubSelector
+      if (!template.tabular.tableDef.searchCustom) {
         pubSelector = getPubSelector(
           template.tabular.selector,
           (data.search && data.search.value) || null,

@@ -78,17 +78,15 @@ function escapeRegExp(string) {
   return string?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
-const MIN_TOKEN_LENGTH = 3;
-const MAX_TOKENS = 5;
-export function getTokens(searchTerm) {
+export function getTokens(searchTerm, minTokenLength, maxTokens) {
   let tokens = (searchTerm || '')
     .trim()
     .split(' ')
-    .filter((token) => token.length >= MIN_TOKEN_LENGTH)
+    .filter((token) => token.length >= minTokenLength)
     .map((t) => escapeRegExp(t.toLowerCase()));
 
-  if (tokens?.length > MAX_TOKENS) {
-    tokens.splice(MAX_TOKENS);
+  if (tokens?.length > maxTokens) {
+    tokens.splice(maxTokens);
   }
   return tokens;
 }
@@ -114,13 +112,16 @@ export function getSearchPaths(tabularTable) {
     const data = column.data;
     //if it doesn't end with () then it's a field
     if (typeof data === 'string' && !data.endsWith('()')) {
-      if (column.searchable) {
+      // DataTables says default value for col.searchable is `true`,
+      // so we will search on all columns that haven't been set to
+      // `false`.
+      if (column.searchable !== false) {
         paths.push(cleanFieldNameForSearch(data));
       }
     }
   });
-  if (tabularTable.extraSearchFields) {
-    paths.push(...tabularTable.extraSearchFields);
+  if (tabularTable.searchExtraFields) {
+    paths.push(...tabularTable.searchExtraFields);
   }
   return paths;
 }

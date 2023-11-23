@@ -4,6 +4,9 @@ import { _ } from 'meteor/underscore';
 import Tabular from '../common/Tabular';
 import { getSearchPaths, getTokens, transformSortArray } from '../common/util';
 
+const DEFAULT_MAX_TOKENS = 5;
+const DEFAULT_MIN_TOKEN_LENGTH = 3;
+
 /*
  * These are the two publications used by TabularTable.
  *
@@ -110,13 +113,17 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   let filteredCursor;
   let filteredRecordIds;
   let countCursor;
-  let tokens = getTokens(searchTerm);
+  let tokens = getTokens(
+    searchTerm,
+    table.options.searchMinTokenLength || DEFAULT_MIN_TOKEN_LENGTH,
+    table.options.searchMaxTokens || DEFAULT_MAX_TOKENS
+  );
   //only enter this path if we really have a search to perform
-  if (tokens?.length && typeof table.customSearch === 'function') {
+  if (tokens?.length && typeof table.searchCustom === 'function') {
     const paths = getSearchPaths(table);
     const newSort = transformSortArray(findOptions.sort);
 
-    filteredRecordIds = table.customSearch(
+    filteredRecordIds = table.searchCustom(
       this.userId,
       newSelector,
       tokens,
