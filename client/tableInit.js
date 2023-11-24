@@ -22,6 +22,7 @@ function tableInit(tabularTable, template) {
     const options = { ...column };
 
     _.extend(options, templateColumnOptions(template, column));
+    _.extend(options, templateColumnOptions(template, column));
 
     // `templateColumnOptions` might have set defaultContent option. If not, we need it set
     // to something to protect against errors from null and undefined values.
