@@ -90,13 +90,13 @@ Tabular.sanitize = function (data) {
 
   const sanitizeData = (unsafeArray) => {
     unsafeArray.forEach(unsafeObject => {
-      for (const key in unsafeObject) {
+      Object.keys(unsafeObject).forEach(key => {
         if (_isJson(unsafeObject[key])) {
           unsafeObject[key] = _sanitizeJson(unsafeObject[key]);
         } else if (typeof unsafeObject[key] === 'string') {
           unsafeObject[key] = _sanitizeString(unsafeObject[key]);
         }
-      }
+      });
     });
 
     return unsafeArray;
