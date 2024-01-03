@@ -141,7 +141,8 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   let fakeCount;
   //if the number of results is greater than the limit then we need to remove the last one
   //and set the fake count to the limit + skip
-  if (filteredRecordIds.length > limit) {
+  //limit can be null - so don't process it if it is
+  if (limit && filteredRecordIds.length > limit) {
     //keep only first $limit records in filteredRecordIds
     fakeCount = filteredRecordIds.length + skip;
     filteredRecordIds.splice(limit, filteredRecordIds.length - limit);
