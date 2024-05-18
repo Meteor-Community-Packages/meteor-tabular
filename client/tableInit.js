@@ -34,7 +34,7 @@ function tableInit(tabularTable, template) {
     // Build the list of field names we want included in the publication and in the searching
     const data = column.data;
     if (typeof data === 'string') {
-      fields[cleanFieldName(data)] = 1;
+      fields[data] = 1;
 
       // DataTables says default value for col.searchable is `true`,
       // so we will search on all columns that haven't been set to
