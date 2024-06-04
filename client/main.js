@@ -11,6 +11,7 @@ import Tabular from '../common/Tabular';
 import tableInit from './tableInit';
 import getPubSelector from './getPubSelector';
 import { getMongoSort, objectsAreEqual, sortsAreEqual } from '../common/util';
+import './datatable-bs5.js';
 
 dataTableInit(window, $);
 Template.registerHelper('TabularTables', Tabular.tablesByName);
