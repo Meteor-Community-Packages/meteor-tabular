@@ -28,6 +28,7 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
   check(tableName, String);
   check(ids, Array);
   check(fields, Match.Optional(Object));
+  //console.debug( 'ids', ids );
 
   const table = Tabular.tablesByName[tableName];
   if (!table) {
@@ -111,7 +112,8 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     findOptions.sort = sort;
   }
   let filteredCursor;
-  let filteredRecordIds;
+  let filteredRecordIds = []; // so that the observer doesn't complain while the promise is not resolved
+  let filteredRecordIdsPromise;
   let countCursor;
   let tokens = getTokens(
     searchTerm,
@@ -123,7 +125,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     const paths = getSearchPaths(table);
     const newSort = transformSortArray(findOptions.sort);
 
-    filteredRecordIds = table.searchCustom(
+    filteredRecordIdsPromise = Promise.resolve( table.searchCustom(
       this.userId,
       newSelector,
       tokens,
@@ -131,31 +133,34 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       newSort,
       skip,
       limit
-    );
+    ));
   } else {
     filteredCursor = table.collection.find(newSelector, findOptions);
-
-    filteredRecordIds = filteredCursor.map((doc) => doc._id);
+    filteredRecordIdsPromise = filteredCursor.mapAsync((doc) => doc._id);
     countCursor = table.collection.find(newSelector, { fields: { _id: 1 } });
   }
   let fakeCount;
   //if the number of results is greater than the limit then we need to remove the last one
   //and set the fake count to the limit + skip
-  if (filteredRecordIds.length > limit) {
-    //keep only first $limit records in filteredRecordIds
-    fakeCount = filteredRecordIds.length + skip;
-    filteredRecordIds.splice(limit, filteredRecordIds.length - limit);
-  } else {
-    fakeCount = filteredRecordIds.length + skip;
-  }
+  filteredRecordIdsPromise.then(( res ) => {
+    //console.debug( 'filteredRecordIds resolved with res=', res );
+    if (res.length > limit) {
+      //keep only first $limit records in filteredRecordIds
+      fakeCount = res.length + skip;
+      res.splice(limit, res.length - limit);
+    } else {
+      fakeCount = res.length + skip;
+    }
+    filteredRecordIds = res;
+  });
   let recordReady = false;
-  let updateRecords = () => {
+  let updateRecords = async () => {
     let currentCount;
     if (!table.skipCount) {
       if (typeof table.alternativeCount === 'function') {
         currentCount = table.alternativeCount(newSelector);
       } else {
-        currentCount = countCursor ? countCursor.count() : fakeCount;
+        currentCount = countCursor ? await countCursor.countAsync() : fakeCount;
       }
     }
 
@@ -198,19 +203,19 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       if (initializing) {
         return;
       }
-
       //console.log('ADDED');
       filteredRecordIds.push(id);
-      updateRecords();
     },
     removed: function (id) {
       //console.log('REMOVED');
       // _.findWhere is used to support Mongo ObjectIDs
-      filteredRecordIds =
-        typeof id === 'string'
-          ? (filteredRecordIds = _.without(filteredRecordIds, id))
-          : (filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id)));
-      updateRecords();
+      filteredRecordIdsPromise.then(() => {
+        filteredRecordIds =
+          typeof id === 'string'
+            ? (filteredRecordIds = _.without(filteredRecordIds, id))
+            : (filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id)));
+        updateRecords();
+      });
     }
   });
   initializing = false;
@@ -226,7 +231,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   // care of sending the client any removed messages.
   this.onStop(() => {
     Meteor.clearInterval(interval);
-    handle?.stop();
+    handle?.then(( h ) => { h.stop(); });
   });
 });
 

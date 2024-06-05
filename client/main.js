@@ -91,7 +91,7 @@ Template.tabular.onRendered(function () {
       // the first subscription, which will then trigger the
       // second subscription.
 
-      //console.log('data', template.tabular.data);
+      //console.log( 'data', data, 'template.tabular.data', template.tabular.data );
 
       // Update skip
       template.tabular.skip.set(data.start);
@@ -137,6 +137,7 @@ Template.tabular.onRendered(function () {
       template.tabular.ready.set(true);
 
       //console.log('ajax');
+      //console.debug( 'calling ajax callback with', template.tabular.data );
 
       callback({
         draw: data.draw,
@@ -459,6 +460,7 @@ Template.tabular.onRendered(function () {
     let cursor = collection.find({ _id: { $in: tableInfo.ids } }, findOptions);
 
     //console.log('tableInfo, fields, sort, find autorun', cursor.count());
+    //console.log( 'autorun: cursor.count', cursor.count(), 'tableInfo.ids.length', tableInfo.ids.length );
 
     // We're subscribing to the docs just in time, so there's
     // a good chance that they aren't all sent to the client yet.
