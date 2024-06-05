@@ -2,7 +2,6 @@
 // pwi 2024- 6- 4
 //  try here to mutualize the datatable imports
 //  begin
-import DataTable from 'datatables.net-bs5';
 import 'datatables.net-buttons-bs5';
 import 'datatables.net-buttons/js/buttons.colVis.mjs';
 import 'datatables.net-buttons/js/buttons.print.mjs';
