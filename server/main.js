@@ -52,7 +52,7 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
   return table.collection.find({ _id: { $in: ids } }, { fields: fields });
 });
 
-Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, limit, searchTerm) {
+Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, skip, limit, searchTerm) {
   check(tableName, String);
   check(selector, Match.Optional(Match.OneOf(Object, null)));
   check(sort, Match.Optional(Match.OneOf(Array, null)));
@@ -113,7 +113,6 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   }
   let filteredCursor;
   let filteredRecordIds = []; // so that the observer doesn't complain while the promise is not resolved
-  let filteredRecordIdsPromise;
   let countCursor;
   let tokens = getTokens(
     searchTerm,
@@ -125,7 +124,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     const paths = getSearchPaths(table);
     const newSort = transformSortArray(findOptions.sort);
 
-    filteredRecordIdsPromise = Promise.resolve( table.searchCustom(
+    filteredRecordIds = table.searchCustom(
       this.userId,
       newSelector,
       tokens,
@@ -133,27 +132,23 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       newSort,
       skip,
       limit
-    ));
+    );
   } else {
     filteredCursor = table.collection.find(newSelector, findOptions);
-    filteredRecordIdsPromise = filteredCursor.mapAsync((doc) => doc._id);
+    filteredRecordIds = await filteredCursor.mapAsync((doc) => doc._id);
     countCursor = table.collection.find(newSelector, { fields: { _id: 1 } });
   }
   let fakeCount;
   //if the number of results is greater than the limit then we need to remove the last one
   //and set the fake count to the limit + skip
-  filteredRecordIdsPromise.then(( res ) => {
-    //console.debug( 'filteredRecordIds resolved with res=', res );
-    filteredRecordIds = res;
-    //limit can be null - so don't process it if it is
-    if (limit && filteredRecordIds.length > limit) {
-      //keep only first $limit records in filteredRecordIds
-      fakeCount = filteredRecordIds.length + skip;
-      filteredRecordIds.splice(limit, filteredRecordIds.length - limit);
-    } else {
-      fakeCount = filteredRecordIds.length + skip;
-    }
-  });
+  //limit can be null - so don't process it if it is
+  if (limit && filteredRecordIds.length > limit) {
+    //keep only first $limit records in filteredRecordIds
+    fakeCount = filteredRecordIds.length + skip;
+    filteredRecordIds.splice(limit, filteredRecordIds.length - limit);
+  } else {
+    fakeCount = filteredRecordIds.length + skip;
+  }
   let recordReady = false;
   let updateRecords = async () => {
     let currentCount;
@@ -193,7 +188,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     updateRecords = _.throttle(Meteor.bindEnvironment(updateRecords), table.throttleRefresh);
   }
 
-  updateRecords();
+  await updateRecords();
 
   this.ready();
 
@@ -207,16 +202,14 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       //console.log('ADDED');
       filteredRecordIds.push(id);
     },
-    removed: function (id) {
+    removed: async function (id) {
       //console.log('REMOVED');
       // _.findWhere is used to support Mongo ObjectIDs
-      filteredRecordIdsPromise.then(() => {
-        filteredRecordIds =
-          typeof id === 'string'
-            ? (filteredRecordIds = _.without(filteredRecordIds, id))
-            : (filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id)));
-        updateRecords();
-      });
+      filteredRecordIds =
+        typeof id === 'string'
+          ? (filteredRecordIds = _.without(filteredRecordIds, id))
+          : (filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id)));
+      await updateRecords();
     }
   });
   initializing = false;
