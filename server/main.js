@@ -154,7 +154,7 @@ Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, ski
     let currentCount;
     if (!table.skipCount) {
       if (typeof table.alternativeCount === 'function') {
-        currentCount = table.alternativeCount(newSelector);
+        currentCount = await table.alternativeCount(newSelector);
       } else {
         currentCount = countCursor ? await countCursor.countAsync() : fakeCount;
       }
