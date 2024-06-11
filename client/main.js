@@ -3,7 +3,8 @@ import './tabular.html';
 /* global _, Blaze, Tracker, ReactiveVar, Session, Meteor, */
 import { $ } from 'meteor/jquery';
 //This is a bit shit that we're initialising this explicit version within the library
-//import dataTableInit from 'datatables.net-bs4';
+import 'datatables.net-bs5';
+
 import { Mongo } from 'meteor/mongo';
 import { Template } from 'meteor/templating';
 
@@ -11,8 +12,6 @@ import Tabular from '../common/Tabular';
 import tableInit from './tableInit';
 import getPubSelector from './getPubSelector';
 import { getMongoSort, objectsAreEqual, sortsAreEqual } from '../common/util';
-
-import './datatable-bs5.js';
 
 //dataTableInit(window, $);
 Template.registerHelper('TabularTables', Tabular.tablesByName);
