@@ -12,13 +12,13 @@ Npm.depends({
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom([ 'METEOR@1.3', '2.9.0', '3.0-rc.0']);
+  api.versionsFrom([ '1.3', '2.8.0', '3.0-rc.4']);
   api.use([
     'check',
     'ecmascript',
     'underscore',
     'mongo',
-    'blaze@2.1.5 || 3.0.0-alpha300.17 ',
+    'blaze@2.9.0 || 3.0.0-rc300.2',
     'templating',
     'reactive-var',
     'tracker',
@@ -28,7 +28,7 @@ Package.onUse(function(api) {
   // jquery is a weak reference in case you want to use a different package or
   // pull it in another way, but regardless you need to make sure it is loaded
   // before any tabular tables are rendered
-  api.use(['jquery@1.1.6 || 3.0.0'], 'client', {weak: true});
+  api.use(['jquery@1.1.6 || 3.0.0 || 3.0.1-alpha300.10'], 'client', {weak: true});
 
   api.use(['meteorhacks:subs-manager@1.2.0'], ['client', 'server'], {weak: true});
 
@@ -48,7 +48,7 @@ Package.onUse(function(api) {
 });
 
 Package.onTest(function(api) {
-  // Tiny Test
+  api.versionsFrom([ '1.3', '2.8.0', '3.0-rc.4']);
   api.use(['aldeed:tabular', 'tinytest']);
   api.use([
     'anti:fake',
