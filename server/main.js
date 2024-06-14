@@ -28,6 +28,7 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
   check(tableName, String);
   check(ids, Array);
   check(fields, Match.Optional(Object));
+  //console.debug( 'ids', ids );
 
   const table = Tabular.tablesByName[tableName];
   if (!table) {
@@ -51,7 +52,7 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
   return table.collection.find({ _id: { $in: ids } }, { fields: fields });
 });
 
-Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, limit, searchTerm) {
+Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, skip, limit, searchTerm) {
   check(tableName, String);
   check(selector, Match.Optional(Match.OneOf(Object, null)));
   check(sort, Match.Optional(Match.OneOf(Array, null)));
@@ -111,7 +112,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     findOptions.sort = sort;
   }
   let filteredCursor;
-  let filteredRecordIds;
+  let filteredRecordIds = []; // so that the observer doesn't complain while the promise is not resolved
   let countCursor;
   let tokens = getTokens(
     searchTerm,
@@ -134,8 +135,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     );
   } else {
     filteredCursor = table.collection.find(newSelector, findOptions);
-
-    filteredRecordIds = filteredCursor.map((doc) => doc._id);
+    filteredRecordIds = await filteredCursor.mapAsync((doc) => doc._id);
     countCursor = table.collection.find(newSelector, { fields: { _id: 1 } });
   }
   let fakeCount;
@@ -150,13 +150,13 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     fakeCount = filteredRecordIds.length + skip;
   }
   let recordReady = false;
-  let updateRecords = () => {
+  let updateRecords = async () => {
     let currentCount;
     if (!table.skipCount) {
       if (typeof table.alternativeCount === 'function') {
-        currentCount = table.alternativeCount(newSelector);
+        currentCount = await table.alternativeCount(newSelector);
       } else {
-        currentCount = countCursor ? countCursor.count() : fakeCount;
+        currentCount = countCursor ? await countCursor.countAsync() : fakeCount;
       }
     }
 
@@ -188,7 +188,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
     updateRecords = _.throttle(Meteor.bindEnvironment(updateRecords), table.throttleRefresh);
   }
 
-  updateRecords();
+  await updateRecords();
 
   this.ready();
 
@@ -199,19 +199,17 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
       if (initializing) {
         return;
       }
-
       //console.log('ADDED');
       filteredRecordIds.push(id);
-      updateRecords();
     },
-    removed: function (id) {
+    removed: async function (id) {
       //console.log('REMOVED');
       // _.findWhere is used to support Mongo ObjectIDs
       filteredRecordIds =
         typeof id === 'string'
           ? (filteredRecordIds = _.without(filteredRecordIds, id))
           : (filteredRecordIds = _.without(filteredRecordIds, _.findWhere(filteredRecordIds, id)));
-      updateRecords();
+      await updateRecords();
     }
   });
   initializing = false;
@@ -227,7 +225,7 @@ Meteor.publish('tabular_getInfo', function (tableName, selector, sort, skip, lim
   // care of sending the client any removed messages.
   this.onStop(() => {
     Meteor.clearInterval(interval);
-    handle?.stop();
+    handle?.then(( h ) => { h.stop(); });
   });
 });
 
