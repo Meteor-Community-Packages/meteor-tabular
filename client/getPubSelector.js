@@ -1,20 +1,19 @@
 import { _ } from 'meteor/underscore';
 
 function getPubSelector(
-    selector,
-    searchString,
-    searchFields,
-    searchCaseInsensitive,
-    splitSearchByWhitespace,
-    columns,
-    tableColumns,
-  ) {
-
+  selector,
+  searchString,
+  searchFields,
+  searchCaseInsensitive,
+  splitSearchByWhitespace,
+  columns,
+  tableColumns
+) {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // if search was invoked via .columns().search(), build a query off that
   // https://datatables.net/reference/api/columns().search()
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  let searchColumns = _.filter(columns, column => {
+  let searchColumns = _.filter(columns, (column) => {
     return column.search && column.search.value !== '';
   });
 
@@ -26,12 +25,12 @@ function getPubSelector(
   if (searchColumns.length === 0) {
     // normalize search fields array to mirror the structure
     // as passed by the datatables ajax.data function
-    searchColumns = _.map(searchFields, field => {
+    searchColumns = _.map(searchFields, (field) => {
       return {
         data: field,
         search: {
-          value: searchString
-        }
+          value: searchString,
+        },
       };
     });
   }
@@ -43,7 +42,7 @@ function getPubSelector(
     searchCaseInsensitive,
     splitSearchByWhitespace,
     columns,
-    tableColumns,
+    tableColumns
   );
 }
 
@@ -54,14 +53,14 @@ function createMongoSearchQuery(
   searchCaseInsensitive,
   splitSearchByWhitespace,
   columns,
-  tableColumns,
+  tableColumns
 ) {
   // See if we can resolve the search string to a number,
   // in which case we use an extra query because $regex
   // matches string fields only.
   const searches = [];
 
-  _.each(searchColumns, field => {
+  _.each(searchColumns, (field) => {
     // Get the column options from the Tabular.Table so we can check search options
     const column = _.findWhere(tableColumns, { data: field.data });
     const exactSearch = column && column.search && column.search.exact;
@@ -76,9 +75,7 @@ function createMongoSearchQuery(
       searchValue = [searchValue];
     }
 
-    _.each(searchValue, searchTerm => {
-      const m1 = {};
-
+    _.each(searchValue, (searchTerm) => {
       // String search
       if (exactSearch) {
         if (numberSearch) {
@@ -111,9 +108,9 @@ function createMongoSearchQuery(
 
   let result;
   if (typeof selector === 'object' && selector !== null) {
-    result = {$and: [selector, {$or: searches}]};
+    result = { $and: [selector, { $or: searches }] };
   } else if (searches.length > 1) {
-    result = {$or: searches};
+    result = { $or: searches };
   } else {
     result = searches[0] || {};
   }
