@@ -374,6 +374,8 @@ Template.tabular.onRendered(function () {
     const userOptions = template.tabular.options.get();
     const options = _.extend({}, ajaxOptions, userOptions);
 
+    //Allow a reinitializing. For example, if we change an app language
+    Session.get('Tabular.reinit');
     //console.log('userOptions autorun', userOptions);
 
     // unless the user provides her own displayStart,
