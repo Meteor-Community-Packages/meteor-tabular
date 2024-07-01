@@ -163,9 +163,12 @@ Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, ski
     // From https://datatables.net/manual/server-side
     // recordsTotal: Total records, before filtering (i.e. the total number of records in the database)
     // recordsFiltered: Total records, after filtering (i.e. the total number of records after filtering has been applied - not just the number of records being returned for this page of data).
+    // happens that this first getInfo publication may return duplicate ids
+    // and this explain the lack of reactivity on changes that some have reported (because the second publication only returns once when first has asked twice)
+    // so https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
 
     const record = {
-      ids: filteredRecordIds,
+      ids: [ ...new Set( filteredRecordIds )],
       // count() will give us the updated total count
       // every time. It does not take the find options
       // limit into account.
