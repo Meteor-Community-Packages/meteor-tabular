@@ -89,7 +89,7 @@ Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, ski
   // them using $and, allowing both selectors to have
   // the same keys.
   if (typeof table.selector === 'function') {
-    const tableSelector = table.selector(this.userId);
+    const tableSelector = await table.selector(this.userId);
     if (_.isEmpty(newSelector)) {
       newSelector = tableSelector;
     } else {
