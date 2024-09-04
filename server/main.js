@@ -72,7 +72,7 @@ Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, ski
   // from this function, with sensitive data, there is
   // a chance someone could do a query and learn something
   // just based on whether a result is found or not.
-  if (typeof table.allow === 'function' && !table.allow(this.userId)) {
+  if (typeof table.allow === 'function' && !(await table.allow(this.userId))) {
     this.ready();
     return;
   }
@@ -81,7 +81,7 @@ Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, ski
 
   // Allow the user to modify the selector before we use it
   if (typeof table.changeSelector === 'function') {
-    newSelector = table.changeSelector(newSelector, this.userId);
+    newSelector = await table.changeSelector(newSelector, this.userId);
   }
 
   // Apply the server side selector specified in the tabular
@@ -124,7 +124,7 @@ Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, ski
     const paths = getSearchPaths(table);
     const newSort = transformSortArray(findOptions.sort);
 
-    filteredRecordIds = table.searchCustom(
+    filteredRecordIds = await table.searchCustom(
       this.userId,
       newSelector,
       tokens,
