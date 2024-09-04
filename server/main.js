@@ -197,7 +197,7 @@ Meteor.publish('tabular_getInfo', async function (tableName, selector, sort, ski
 
   // Handle docs being added or removed from the result set.
   let initializing = true;
-  const handle = filteredCursor?.observeChanges({
+  const handle = filteredCursor?.observeChangesAsync({
     added: function (id) {
       if (initializing) {
         return;
