@@ -7,10 +7,6 @@ Package.describe({
   git: 'https://github.com/Meteor-Community-Packages/meteor-tabular.git'
 });
 
-Npm.depends({
-  'datatables.net': '2.0.8'
-});
-
 Package.onUse(function(api) {
   api.versionsFrom([ '1.3', '2.8.0', '3.0']);
   api.use([
