@@ -79,4 +79,9 @@ Tabular.Table = class {
   }
 };
 
+/**
+ * Does nothing, used to keep Isomorphic with client.
+ */
+Tabular.init = () => {}
+
 export default Tabular;

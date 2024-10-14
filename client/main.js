@@ -11,7 +11,16 @@ Template.registerHelper('TabularTables', Tabular.tablesByName);
 Tabular.tableRecords = new Mongo.Collection('tabular_records');
 Tabular.remoteTableRecords = [];
 
-Tabular.init = () => {
+/**
+ * Initialize tabular after you've imported your DataTable code, so
+ * there are no conflicts or race conditions.
+ *
+ * Dependening on which datatables versions you use,
+ * you might want to pass the DataTable constructor directly.
+ *
+ * @param DataTable {object=} only pass this instance if you're using DataTables >= 2.x
+ */
+Tabular.init = ({ DataTable } = {}) => {
   Tabular.getTableRecordsCollection = function (connection) {
     if (!connection || connection === Tabular.tableRecords._connection) {
       return Tabular.tableRecords;
@@ -39,6 +48,15 @@ Tabular.init = () => {
       return _.omit(this, 'table', 'selector');
     }
   });
+
+
+  const createDatatable = (template, options) => {
+    return DataTable
+      ? new DataTable(template.data?.id
+          ? `#${template.data?.id}`
+          :template.$tableElement.get(0), options)
+      : template.$tableElement.DataTable(options)
+  }
 
   Template.tabular.onRendered(function () {
     const template = this;
@@ -386,7 +404,8 @@ Tabular.init = () => {
 
       // After the first time, we need to destroy before rebuilding.
       if (table) {
-        let dt = template.$tableElement.DataTable();
+
+        let dt = createDatatable(template);
         if (dt) {
           dt.destroy();
         }
@@ -395,7 +414,7 @@ Tabular.init = () => {
 
       // We start with an empty table.
       // Data will be populated by ajax function now.
-      table = template.$tableElement.DataTable(options);
+      table = createDatatable(template, options);
 
       if (options.buttonContainer) {
         const container = $(options.buttonContainer, table.table().container());
@@ -540,7 +559,7 @@ Tabular.init = () => {
 
     // Destroy the DataTable instance to avoid memory leak
     if (this.$tableElement && this.$tableElement.length) {
-      const dt = this.$tableElement.DataTable();
+      const dt = createDatatable(this);
       if (dt) {
         dt.destroy();
       }
