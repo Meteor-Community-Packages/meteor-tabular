@@ -37,6 +37,12 @@ Meteor.publish('tabular_genericPub', function (tableName, ids, fields) {
     return;
   }
 
+  // If there is an publication override do not publish anything
+  if (table.pub) {
+    this.ready();
+    return;
+  }
+
   // Check security. We call this in both publications.
   if (typeof table.allow === 'function' && !table.allow(this.userId, fields)) {
     this.ready();
