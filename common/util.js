@@ -71,6 +71,15 @@ export function getMongoSort(order, columns) {
       sort.push([propName, dir]);
     }
   });
+  
+  // Add _id as a tie-breaker to ensure deterministic sorting
+  if (sort.length > 0) {
+    // Only add _id if it's not already in the sort array
+    if (!sort.some(([field]) => field === '_id')) {
+      sort.push(['_id', 'asc']);
+    }
+  }
+  
   return sort;
 }
 
