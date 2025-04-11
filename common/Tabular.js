@@ -46,6 +46,7 @@ Tabular.Table = class {
     this.skipCount = options.skipCount;
     this.searchCustom = options.searchCustom;
     this.searchExtraFields = options.searchExtraFields;
+    this.ensureDeterministicSort = options.ensureDeterministicSort;
 
     if (_.isArray(options.extraFields)) {
       const fields = {};
@@ -69,6 +70,7 @@ Tabular.Table = class {
       'throttleRefresh',
       'extraFields',
       'searchExtraFields',
+      'ensureDeterministicSort',
       'alternativeCount',
       'skipCount',
       'name',

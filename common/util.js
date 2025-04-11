@@ -48,7 +48,7 @@ export function objectsAreEqual(oldVal, newVal) {
 
 // Take the DataTables `order` format and column info
 // and convert it into a mongo sort array.
-export function getMongoSort(order, columns) {
+export function getMongoSort(order, columns, deterministic) {
   if (!order || !columns) {
     return;
   }
@@ -71,15 +71,15 @@ export function getMongoSort(order, columns) {
       sort.push([propName, dir]);
     }
   });
-  
+
   // Add _id as a tie-breaker to ensure deterministic sorting
-  if (sort.length > 0) {
+  if (deterministic && sort.length > 0) {
     // Only add _id if it's not already in the sort array
     if (!sort.some(([field]) => field === '_id')) {
       sort.push(['_id', 'asc']);
     }
   }
-  
+
   return sort;
 }
 
