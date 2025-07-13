@@ -46,6 +46,7 @@ Tabular.Table = class {
     this.skipCount = options.skipCount;
     this.searchCustom = options.searchCustom;
     this.searchExtraFields = options.searchExtraFields;
+    this.extraFieldWithSubDocument = typeof options.extraFieldWithSubDocument === 'boolean' ? options.extraFieldWithSubDocument : false;
 
     if (_.isArray(options.extraFields)) {
       const fields = {};
@@ -72,7 +73,8 @@ Tabular.Table = class {
       'alternativeCount',
       'skipCount',
       'name',
-      'selector'
+      'selector',
+      'extraFieldWithSubDocument'
     );
 
     Tabular.tablesByName[this.name] = this;
