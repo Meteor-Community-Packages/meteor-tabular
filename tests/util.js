@@ -1,26 +1,38 @@
+import { Tinytest } from 'meteor/tinytest';
+import { 
+	cleanFieldNameForSearch,
+	cleanFieldName,
+	sortsAreEqual,
+	objectsAreEqual,
+	getMongoSort,
+	parseMultiFieldColumns,
+	createRegExp 
+} from '../common/util.js';
+import { LogResults, GenerateBothColumns, createRegExpField } from './reusedFunctions.js';
+
 // Test really reliable Util functions
 Tinytest.add('Util - cleanFieldName', function (test) {
 	var Input = "Parents.Child[0]"
 	var ExpectedOutput = "Parents"
-	var Output = Util.cleanFieldName(Input)
+	var Output = cleanFieldName(Input)
 	LogResults(Input, ExpectedOutput, Output, test)
 })
 Tinytest.add('Util - cleanFieldNameForSearch', function (test) {
 	var Input = 'Parents.Child[0]'
 	var ExpectedOutput = "Parents.Child"
-	var Output = Util.cleanFieldNameForSearch(Input)
+	var Output = cleanFieldNameForSearch(Input)
 	LogResults(Input, ExpectedOutput, Output, test)
 })
 Tinytest.add('Util - sortsAreEqual', function (test) {
 	var Input = ["Parents", "Child"]
 	var ExpectedOutput = false
-	var Output = Util.sortsAreEqual(Input[0], Input[1])
+	var Output = sortsAreEqual(Input[0], Input[1])
 	LogResults(Input, ExpectedOutput, Output, test)
 })
 Tinytest.add('Util - objectsAreEqual', function (test) {
 	var Input = [{Child: 0}, {Child: 1}]
 	var ExpectedOutput = false
-	var Output = Util.objectsAreEqual(Input[0], Input[1])
+	var Output = objectsAreEqual(Input[0], Input[1])
 	LogResults(Input, ExpectedOutput, Output, test)
 })
 
@@ -40,14 +52,14 @@ Tinytest.add('Util - getMongoSort', function (test) {
 	}]
 	// var ExpectedOutput =  [["ClassTwo","asc"]]
 	var ExpectedOutput =  [["url","asc"]]
-	var Output = Util.getMongoSort(order, BothCols.columns)
+	var Output = getMongoSort(order, BothCols.columns)
 	LogResults(BothCols.columns, ExpectedOutput, Output, test)
 })
 
 Tinytest.add('Util - parseMultiFieldColumns', function (test) {
 	var SpacedClassList = ["one two", Fake.sentence([4]), Fake.sentence([5])]
 	var BothCols = GenerateBothColumns(SpacedClassList)
-	var Output = Util.parseMultiFieldColumns(BothCols.columns)
+	var Output = parseMultiFieldColumns(BothCols.columns)
 	LogResults(BothCols.columns, BothCols.ExpectedOutput, Output, test)
 })
 
@@ -61,7 +73,7 @@ Tinytest.add('Util - createRegExp', function (test) {
 	var Input = createRegExpField(SpacedClassList, searchString, {})[0]
 
 	var ExpectedOutput =  searchString
-	var Output = Util.createRegExp(Input, searchString)
+	var Output = createRegExp(Input, searchString)
 	LogResults(Input, ExpectedOutput, Output, test)
 
 	//
@@ -82,7 +94,7 @@ Tinytest.add('Util - createRegExp', function (test) {
 		ElasticSearchString+PassedOptions.regex[2]
 	// var ExpectedOutput =  PassedOptions.regex+searchString
 	// This must be an object and not an array:
-	var Output = Util.createRegExp(Input, searchString)
+	var Output = createRegExp(Input, searchString)
 	LogResults(Input, ExpectedOutput, Output, test)
 
 	//
@@ -104,7 +116,7 @@ Tinytest.add('Util - createRegExp', function (test) {
 	var ExpectedOutput =  PassedOptions.regex[0]+
 		ElasticSearchString+PassedOptions.regex[2]
 	// This must be an object and not an array:
-	var Output = Util.createRegExp(Input, searchString)
+	var Output = createRegExp(Input, searchString)
 	LogResults(Input, ExpectedOutput, Output, test)
 
 	//
@@ -112,6 +124,6 @@ Tinytest.add('Util - createRegExp', function (test) {
 	//
 	searchString = searchString+'3'
 	var ExpectedOutput = '^@&&@&&@&&@&&@&&@&&@'
-	var Output = Util.createRegExp(Input, searchString)
+	var Output = createRegExp(Input, searchString)
 	LogResults(Input, ExpectedOutput, Output, test)
 })
