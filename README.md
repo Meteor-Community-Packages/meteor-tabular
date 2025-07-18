@@ -715,3 +715,17 @@ new Tabular.Table({
 ```
 
 If you are using the default DataTables theme, you can use the `dom` option instead of `buttonContainer`. See https://datatables.net/extensions/buttons/#Displaying-the-buttons
+
+## Run the tests
+
+You can run the tests the classic way using the browser
+
+````shell
+$ meteor npm tun test:browser
+````
+
+or headless using [mtest](https://github.com/zodern/mtest)
+
+```shell
+$ meteor npm run test:headless
+```
