@@ -354,6 +354,61 @@ TabularTables.People = new Tabular.Table({
 });
 ```
 
+### Enabling Extra Fields for subdocuments
+
+When working with complex documents, you may need to include subdocuments in the extraFields configuration. To do this, you can simply specify the top-level field name of the subdocument.
+
+Document:
+```json
+{
+  'firstName': 'John',
+  'lastName': 'Doe',
+  'location': {
+    'address': '350 5th Ave',
+    'city': 'New York City',
+    'state': 'NY',
+    'zipCode': '10118'
+  }
+}
+```
+
+Example:
+
+```js
+TabularTables.People = new Tabular.Table({
+  // other properties...
+  extraFields: [
+    'firstName', 
+    'lastName',
+    'location'
+  ]
+});
+```
+In this example, the entire location subdocument will be included as an extra field.
+
+### Selective Field Inclusion with `extraFieldWithSubDocument`
+
+In cases where you do not need to publish the entire subdocument, you can selectively include specific fields using the `extraFieldWithSubDocument` property. This allows for more granular control over which parts of the subdocument are exposed.
+
+```js
+TabularTables.People = new Tabular.Table({
+  // other properties...
+  extraFieldWithSubDocument: true,
+  extraFields: [
+    'firstName', 
+    'lastName',
+    'location.state'
+  ]
+});
+```
+
+In this configuration, only the `state` field from the `location` subdocument will be published. Other fields under `location` will be excluded.
+
+> The default value of `extraFieldWithSubDocument` is `false`. If not explicitly enabled, the entire top-level subdocument will be included when specified in `extraFields`.
+
+> This feature is especially useful when you want to display **some fields from a subdocument in columns**, while including **other fields from the same subdocument** using `extraFields`.
+
+
 ## Modifying the Selector
 
 If your table requires the selector to be modified before it's published, you can modify it with the `changeSelector` method. This can be useful for modifying what will be returned in a search. It's called only on the server.
