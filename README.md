@@ -1,5 +1,4 @@
-aldeed:tabular
-=========================
+# aldeed:tabular
 
 A Meteor package that creates reactive [DataTables](http://datatables.net/) in an efficient way, allowing you to display the contents of enormous collections without impacting app performance.
 
@@ -50,14 +49,12 @@ Please open an issue if you like to help out with maintenance on this package.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## ATTENTION: Updating to 2.0
+## ATTENTION: Release v3 and datatables 2.x
 
-Version 2.0 API is backwards compatible other than the following changes:
-- Requires Meteor 1.3+
-- You must explicitly import the `Tabular` object into every file where you use it. (`import Tabular from 'meteor/aldeed:tabular';`)
-- You must configure the Bootstrap theme (or whatever theme you want) yourself. See [Installing and Configuring a Theme](#installing-and-configuring-a-theme)
+Version 3.0 is Meteor 3 compatible but **slightly breaking** in order to support more flexibility in importing
+different versions of DataTables.
 
-This version also includes a few fixes and a few new features.
+Read the respective sections on how to install/setup aldeed:tabular v3
 
 ## Features
 
@@ -87,27 +84,58 @@ This example is for the Bootstrap theme. You can use another theme package. See 
 First:
 
 ```bash
-$ npm install --save jquery@1.12.1 datatables.net-bs
+$ meteor add jquery@3.0.2
+$ npm install --save jquery@latest datatables.net-bs@latest
 ```
 
-Note that we install jquery@1.12.1. This needs to match the current version of jQuery included with Meteor's `jquery` package. (See the version comment in https://github.com/meteor/meteor/blob/master/packages/non-core/jquery/package.js) Otherwise, due to the `datatables.net` package depending on `jquery` NPM package, it might automatically install the latest `jquery` version, which may conflict with Bootstrap or Meteor.
+> Heads up! If you want to use datatables 2.x and newer, you need to [recompile these modules](https://guide.meteor.com/using-npm-packages#recompile)
+> or they will not detect the correct jquery module :-(
+
+FOr this, open `package.json` and add to the `"meteor": {...}` the the nodes modules to recompile:
+
+```json
+{
+  "meteor": {
+    "nodeModules": {
+      "recompile": {
+        "datatables.net": ["client", "legacy"],
+        "datatables.net-bs": ["client", "legacy"]
+      }
+    }
+  }
+}
+```
+
+In this example the datatables core and bootstrap are recopmiled.
+While core (`datatables.net`) is always to be added, the other packages may vary, depending on your needs.
 
 Then, somewhere in your client JavaScript:
 
+**Datatables 1.x**
+
 ```js
 import { $ } from 'meteor/jquery';
+import Tabular from 'meteor/aldeeed:tabular'
 import dataTablesBootstrap from 'datatables.net-bs';
 import 'datatables.net-bs/css/dataTables.bootstrap.css';
+// and maybe other DT imports
+
 dataTablesBootstrap(window, $);
+// and maybe other DT-init calls
+
+// finally initializing Tabular
+Tabular.init()
 ```
 
-## Online Demo App
+**Datatables 2.x**
 
-View a [demonstration project on Meteorpad](http://meteorpad.com/pad/xNafF9N5XJNrFJEyG/TabularDemo).
+```js
+import DataTables from 'datatables.net-bs';
+import 'datatables.net-bs/css/dataTables.bootstrap.css';
+// and maybe other DT imports
 
-Another example app courtesy of @AnnotatedJS:
-* Hosted app: http://greatalbums.meteor.com/albums (You can sign in with email "admin@demo.com" and password "password")
-* Source: https://github.com/AnnotatedJS/GreatAlbums
+Tabular.init({ DataTables })
+```
 
 ## Example
 
@@ -325,6 +353,61 @@ TabularTables.People = new Tabular.Table({
   extraFields: ['firstName', 'lastName']
 });
 ```
+
+### Enabling Extra Fields for subdocuments
+
+When working with complex documents, you may need to include subdocuments in the extraFields configuration. To do this, you can simply specify the top-level field name of the subdocument.
+
+Document:
+```json
+{
+  'firstName': 'John',
+  'lastName': 'Doe',
+  'location': {
+    'address': '350 5th Ave',
+    'city': 'New York City',
+    'state': 'NY',
+    'zipCode': '10118'
+  }
+}
+```
+
+Example:
+
+```js
+TabularTables.People = new Tabular.Table({
+  // other properties...
+  extraFields: [
+    'firstName', 
+    'lastName',
+    'location'
+  ]
+});
+```
+In this example, the entire location subdocument will be included as an extra field.
+
+### Selective Field Inclusion with `extraFieldWithSubDocument`
+
+In cases where you do not need to publish the entire subdocument, you can selectively include specific fields using the `extraFieldWithSubDocument` property. This allows for more granular control over which parts of the subdocument are exposed.
+
+```js
+TabularTables.People = new Tabular.Table({
+  // other properties...
+  extraFieldWithSubDocument: true,
+  extraFields: [
+    'firstName', 
+    'lastName',
+    'location.state'
+  ]
+});
+```
+
+In this configuration, only the `state` field from the `location` subdocument will be published. Other fields under `location` will be excluded.
+
+> The default value of `extraFieldWithSubDocument` is `false`. If not explicitly enabled, the entire top-level subdocument will be included when specified in `extraFields`.
+
+> This feature is especially useful when you want to display **some fields from a subdocument in columns**, while including **other fields from the same subdocument** using `extraFields`.
+
 
 ## Modifying the Selector
 
@@ -604,6 +687,10 @@ For package names for other themes, see https://datatables.net/download/npm
 
 Once the packages are installed, you need to import them in one of your client JavaScript files:
 
+<details>
+<Summary>datatables.net 1.x</Summary>
+
+
 ```js
 import { $ } from 'meteor/jquery';
 
@@ -629,6 +716,47 @@ flashExportButtons(window, $);
 printButton(window, $);
 ```
 
+</details>
+
+
+<details>
+<Summary>datatables.net >= 2.x</Summary>
+
+You need to have Meteor [to recompile the packages](https://guide.meteor.com/using-npm-packages#recompile):
+
+```json
+{
+  ...
+  "meteor": {
+    ...
+    "nodeModules": {
+      "recompile": {
+        "datatables.net": ["client", "legacy"],
+        "datatables.net-bs": ["client", "legacy"],
+        "datatables.net-buttons": ["client", "legacy"],
+        "datatables.net-buttons-bs": ["client", "legacy"]
+      }
+    }
+  }
+}
+```
+
+```js
+// Bootstrap Theme
+import 'datatables.net-bs';
+import 'datatables.net-bs/css/dataTables.bootstrap.css';
+
+// Buttons Core
+import 'datatables.net-buttons-bs';
+// Import whichever buttons you are using
+import 'datatables.net-buttons/js/buttons.colVis.js';
+import 'datatables.net-buttons/js/buttons.html5.js';
+import 'datatables.net-buttons/js/buttons.flash.js';
+import 'datatables.net-buttons/js/buttons.print.js';
+```
+
+</details>
+
 Finally, for the Tabular tables that need them, add the `buttons` and `buttonContainer` options. The `buttons` option is part of DataTables and is documented here: https://datatables.net/extensions/buttons/ The `buttonContainer` option is part of `aldeed:tabular` and does the tricky task of appending the buttons to some element in the generated table. Set it to the CSS selector for the container.
 
 Bootstrap example:
@@ -642,3 +770,17 @@ new Tabular.Table({
 ```
 
 If you are using the default DataTables theme, you can use the `dom` option instead of `buttonContainer`. See https://datatables.net/extensions/buttons/#Displaying-the-buttons
+
+## Run the tests
+
+You can run the tests the classic way using the browser
+
+````shell
+$ meteor npm tun test:browser
+````
+
+or headless using [mtest](https://github.com/zodern/mtest)
+
+```shell
+$ meteor npm run test:headless
+```

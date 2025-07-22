@@ -1,3 +1,7 @@
+import { Tinytest } from 'meteor/tinytest';
+import { createMongoDBQuery } from '../common/util.js';
+import { LogResults, GenerateBothColumns, createRegExpField } from './reusedFunctions.js';
+
 //
 // Integration Testing (should be basic case of createRegExp):
 //
@@ -6,8 +10,8 @@ Tinytest.add('Util createMongoDBQuery - Single Column', function (test) {
 	var SpacedClassList = ["one"]
 	var searchString = 'TestSearch'
 	var BothCols = GenerateBothColumns(SpacedClassList)
-	// var Output = Util.createMongoDBQuery(BothCols.ExpectedOutput)
-	var Output = Util.createMongoDBQuery({}, searchString, {}, true, true, BothCols.ExpectedOutput)
+	// var Output = createMongoDBQuery(BothCols.ExpectedOutput)
+	var Output = createMongoDBQuery({}, searchString, {}, true, true, BothCols.ExpectedOutput)
 	var ExpectedOutput = {
 	  "$and":[
 	    { },
@@ -30,7 +34,7 @@ Tinytest.add('Util createMongoDBQuery - Multiple Query', function (test) {
 	var SpacedClassList = ["one two"]
 	var searchString = 'TestSearch'
 	var BothCols = GenerateBothColumns(SpacedClassList)
-	var Output = Util.createMongoDBQuery({}, searchString, {},
+	var Output = createMongoDBQuery({}, searchString, {},
 		true, true, BothCols.ExpectedOutput)
 
 	var ExpectedOutput = {
@@ -76,7 +80,7 @@ Tinytest.add('Util createMongoDBQuery - Existing Selector', function (test) {
 	    }
 	  ]
 	}
-	var Output = Util.createMongoDBQuery(selector, searchString, {},
+	var Output = createMongoDBQuery(selector, searchString, {},
 		true, true, BothCols.ExpectedOutput)
 
 	var ExpectedOutput = {
@@ -116,7 +120,7 @@ Tinytest.add('Util createMongoDBQuery - Specified Columns', function (test) {
 	var searchString = 'TestSearch'
 	// This must be an object and not an array:
 	var Input = createRegExpField(SpacedClassList, searchString, {})
-	var Output = Util.createMongoDBQuery({}, searchString,
+	var Output = createMongoDBQuery({}, searchString,
 		Input, true, true, {})
 	var ExpectedOutput = {
 	  "$and":[
