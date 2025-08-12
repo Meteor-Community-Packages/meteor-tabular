@@ -4,10 +4,9 @@ import {
   cleanFieldName,
   sortsAreEqual,
   objectsAreEqual,
-  getMongoSort,
-
+  getMongoSort
 } from '../common/util.js';
-import { LogResults, GenerateBothColumns, createRegExpField } from './reusedFuncions.js';
+import { GenerateBothColumns, createRegExpField } from './reusedFunctions';
 
 describe('common/util', () => {
   it(cleanFieldName.name, () => {
