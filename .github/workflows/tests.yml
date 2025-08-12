@@ -24,10 +24,13 @@ jobs:
           meteor-release: '3.3.1'
 
       - name: cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - run: cd test-proxy && meteor npm run test
+      - run: |
+          cd test-proxy
+          meteor npm install
+          meteor npm run test
