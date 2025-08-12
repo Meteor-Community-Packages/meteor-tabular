@@ -46,21 +46,18 @@ Package.onUse(function(api) {
 
 Package.onTest(function(api) {
   api.versionsFrom([ '1.3', '2.8.0', '3.0']);
-  api.use(['aldeed:tabular', 'tinytest']);
+  api.use(['aldeed:tabular', 'meteortesting:mocha@3.3.0']);
   api.use([
     'anti:fake',
-    'check',
+    //'check',
     'underscore',
-    'reactive-var',
-    'tracker',
-    'ecmascript'
+    //'reactive-var',
+    //'tracker',
+    'ecmascript',
+    'jquery@1.11.11 || 3.0.2',
   ]);
 
   // Load this first:
-  api.addFiles('tests/reusedFunctions.js', 'client');
-  api.addFiles([
-    'tests/util.js',
-    'tests/mongoDBQuery.js',
-    'tests/utilIntegration.js'
-  ], 'client' );
+  api.mainModule('tests/server.tests.js', 'server');
+  api.mainModule('tests/client.tests.js', 'client');
 });

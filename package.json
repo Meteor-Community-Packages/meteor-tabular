@@ -5,7 +5,6 @@
     "test:ci": "mtest --once --package ./"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.2",
-    "@zodern/mtest": "^0.5.1"
+    "@biomejs/biome": "2.1.2"
   }
 }
