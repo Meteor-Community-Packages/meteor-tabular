@@ -4,12 +4,12 @@
     "datatables.net": {
       "version": "1.10.12",
       "resolved": "https://registry.npmjs.org/datatables.net/-/datatables.net-1.10.12.tgz",
-      "integrity": "sha1-1m4Ul9OfVa1vHmwquzDOGSkOMPg="
+      "integrity": "sha512-bftrKsXRWT+y5aeK8IoMMMlEhh59eb9BJVoCWsrC377sJY35C8Btn18whpJv92xR9PZ1HfSaMumxmMnu22ki9A=="
     },
     "jquery": {
-      "version": "3.1.1",
-      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.1.1.tgz",
-      "integrity": "sha1-NHwcIcfgBBFeCk2jLOzgQfrTyKM="
+      "version": "3.7.1",
+      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.7.1.tgz",
+      "integrity": "sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg=="
     }
   }
 }
