@@ -1,9 +1,10 @@
 {
+  "scripts": {
+    "test:browser": "meteor test-packages ./",
+    "test:headless": "mtest --package ./",
+    "test:ci": "mtest --once --package ./"
+  },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.22.15",
-    "eslint": "^8.50.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "prettier": "^3.0.3"
+    "@biomejs/biome": "2.1.2"
   }
 }
