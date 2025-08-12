@@ -21,7 +21,7 @@ jobs:
       - name: Setup meteor
         uses: meteorengineer/setup-meteor@v1
         with:
-          meteor-release: '3.2.2'
+          meteor-release: '3.3.1'
 
       - name: cache dependencies
         uses: actions/cache@v3
@@ -30,4 +30,4 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - run: meteor npm install && meteor npm run test:ci -- "--release=3.2.2"
+      - run: cd test-proxy && meteor npm run test
