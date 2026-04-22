@@ -191,7 +191,7 @@ Tabular.init = ({ DataTable } = {}) => {
               }
             });
         }
-        if( userInitComplete ) userInitComplete.apply(this, arguments);;
+        if( userInitComplete ) userInitComplete.apply(this, arguments);
       };
     };
 
