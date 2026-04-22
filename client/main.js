@@ -191,7 +191,7 @@ Tabular.init = ({ DataTable } = {}) => {
               }
             });
         }
-        if( userInitComplete ) userInitComplete();
+        if( userInitComplete ) userInitComplete.apply(this, arguments);;
       };
     };
 
@@ -214,7 +214,7 @@ Tabular.init = ({ DataTable } = {}) => {
               headerCell.__blazeViewInstance = Blaze.render(view, headerCell);
             }
           });
-        if( userHeaderCallback ) userHeaderCallback( ...arguments );
+        if( userHeaderCallback ) userHeaderCallback.apply(this, arguments);
       };
     };
 
