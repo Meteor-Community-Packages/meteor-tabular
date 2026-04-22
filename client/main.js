@@ -158,8 +158,13 @@ Tabular.init = ({ DataTable } = {}) => {
           recordsFiltered: template.tabular.recordsFiltered,
           data: template.tabular.data
         });
-      },
-      initComplete: function () {
+      }
+    };
+
+    // do not override user initComplete() DT callback
+    const addInitCompleteCallback = ( opts ) => {
+      const userInitComplete = opts.initComplete;
+      opts.initComplete = function(){
         // Fix THOMAS modified 24.11.2021
         // Fix the case of multiple table on the same page
         const tableId = template.data.id;
@@ -186,11 +191,16 @@ Tabular.init = ({ DataTable } = {}) => {
               }
             });
         }
-      },
-      headerCallback (headerRow) {
+        if( userInitComplete ) userInitComplete.apply(this, arguments);
+      };
+    };
+
+    // do not override user headerCallback() DT callback
+    const addHeaderCallback = ( opts ) => {
+      const userHeaderCallback = opts.headerCallback;
+      opts.headerCallback = function( headerRow ){
         const options = template.tabular.options.get();
         const columns = options.columns;
-
         $(headerRow)
           .find('td,th')
           .each((index, headerCell) => {
@@ -204,7 +214,8 @@ Tabular.init = ({ DataTable } = {}) => {
               headerCell.__blazeViewInstance = Blaze.render(view, headerCell);
             }
           });
-      }
+        if( userHeaderCallback ) userHeaderCallback.apply(this, arguments);
+      };
     };
 
     // For testing
@@ -386,6 +397,8 @@ Tabular.init = ({ DataTable } = {}) => {
     template.autorun((c) => {
       const userOptions = template.tabular.options.get();
       const options = _.extend({}, ajaxOptions, userOptions);
+      addInitCompleteCallback( options );
+      addHeaderCallback( options );
 
       //console.log('userOptions autorun', userOptions);
 
